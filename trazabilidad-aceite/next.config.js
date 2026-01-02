@@ -1,0 +1,14 @@
+/** @type {import('next').NextConfig} */
+
+const nextConfig = {
+    swcMinify: true,
+    reactStrictMode: true,
+    experimental: {
+        // Habilitar características experimentales si es necesario
+    }
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
+};
+
+module.exports = nextConfig;

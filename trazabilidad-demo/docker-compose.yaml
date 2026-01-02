@@ -1,0 +1,17 @@
+services:
+  codecrypto.traza-demo:
+    container_name: traza-demo.codecrypto
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.trazabilidad-demo.rule=Host(`trazabilidad-demo.codecrypto.academy`)"
+      - "traefik.http.routers.trazabilidad-demo.entrypoints=websecure"
+      - "traefik.http.routers.trazabilidad-demo.tls.certresolver=le"
+      - "traefik.http.services.trazabilidad-demo.loadbalancer.server.port=3006"
+    networks:
+      - academy-network
+    restart: unless-stopped
+
+networks:
+  academy-network:
+    external: true

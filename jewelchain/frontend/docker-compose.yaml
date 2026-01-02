@@ -1,0 +1,17 @@
+services:
+  codecrypto.jewelchain:
+    container_name: jewelchain.codecrypto
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jewelchain.rule=host(`jewelchain.codecrypto.academy`)"
+      - "traefik.http.routers.jewelchain.entrypoints=websecure"
+      - "traefik.http.routers.jewelchain.tls.certresolver=le"
+      - "traefik.http.services.jewelchain.loadbalancer.server.port=3001"
+    networks:
+      - academy-network
+    restart: unless-stopped
+
+networks:
+  academy-network:
+    external: true

@@ -1,0 +1,17 @@
+services:
+  codecrypto.traza-vino:
+    container_name: traza-vino.codecrypto
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traza-vino.rule=host(`trazabilidad-vino.codecrypto.academy`)"
+      - "traefik.http.routers.traza-vino.entrypoints=websecure"
+      - "traefik.http.routers.traza-vino.tls.certresolver=le"
+      - "traefik.http.services.traza-vino.loadbalancer.server.port=3002"
+    networks:
+      - academy-network
+    restart: unless-stopped
+
+networks:
+  academy-network:
+    external: true

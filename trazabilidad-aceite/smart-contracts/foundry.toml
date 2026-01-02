@@ -1,0 +1,13 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+
+# Config nodo local
+localhost = "https://rpc.codecrypto.academy"
+
+# Disable caching
+no_storage_caching = true
+no_rpc_rate_limit = true
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

@@ -1,0 +1,33 @@
+{
+    "name": "jewel-chain",
+    "version": "0.0.1",
+    "type": "module",
+    "description": "Project pfm-web3-nov24-3 trazabilidad",
+    "contributors": [
+        {
+            "name": "Johan Sebastian"
+        },
+        {
+            "name": "PauMB"
+        }
+    ],
+    "scripts": {
+        "build": "forge build",
+        "test": "forge test",
+        "lint": "forge fmt",
+        "init:user": "node ./scripts/createUsers.js",
+        "init:mineral": "node ./scripts/createRawMinerals.js",
+        "deploy:user": "dotenv forge script script/UserJewelChain__Deploy.s.sol:DeployUsersJewelsChain --private-key $PRIVATE_KEY --rpc-url mumbai --broadcast --legacy",
+        "deploy:raw-mineral": "dotenv forge script script/RawMineral__Deploy.s.sol:DeployRawMineral --private-key $PRIVATE_KEY --rpc-url mumbai --broadcast --legacy",
+        "deploy:distributor": "dotenv forge script script/Distributor__Deploy.s.sol:DeployDistributor --private-key $PRIVATE_KEY --rpc-url mumbai --broadcast --legacy",
+        "deploy:jewelFactory": "dotenv forge script script/JewelFactory__Deploy.s.sol:DeployJewelFactory --private-key $PRIVATE_KEY --rpc-url mumbai --broadcast --legacy",
+        "deploy:all-contracts": "dotenv forge script script/All_Contracts__Deploy.s.sol:DeployAllContracts --private-key $PRIVATE_KEY --rpc-url mumbai --broadcast --legacy"
+    },
+    "devDependencies": {
+        "dotenv": "^16.4.5",
+        "dotenv-cli": "^7.4.2",
+        "ethers": "^6.13.4",
+        "prettier": "^3.3.3",
+        "prettier-plugin-solidity": "^1.4.1"
+    }
+}

@@ -1,0 +1,19 @@
+# Compiler files
+cache/
+out/
+artifacts/
+
+node_modules/
+
+# Ignores development broadcast logs
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+.env*
+node_modules/
+
+# forge
+broadcast/

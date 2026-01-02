@@ -1,0 +1,17 @@
+services:
+  codecrypto.traza-sangre: 
+    container_name: trazabilidad-sangre.codecrypto
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.trazabilidad-sangre.rule=Host(`trazabilidad-sangre.codecrypto.academy`)"
+      - "traefik.http.routers.trazabilidad-sangre.entrypoints=websecure"
+      - "traefik.http.routers.trazabilidad-sangre.tls.certresolver=le"
+      - "traefik.http.services.trazabilidad-sangre.loadbalancer.server.port=3003"
+    networks:
+      - academy-network
+    restart: unless-stopped
+
+networks:
+  academy-network:
+    external: true

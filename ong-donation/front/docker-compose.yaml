@@ -1,0 +1,17 @@
+services:
+  codecrypto.ong-donation:
+    container_name: ong-donation.codecrypto
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ong-donation.rule=host(`ong-donation.codecrypto.academy`)"
+      - "traefik.http.routers.ong-donation.entrypoints=websecure"
+      - "traefik.http.routers.ong-donation.tls.certresolver=le"
+      - "traefik.http.services.ong-donation.loadbalancer.server.port=3005"
+    networks:
+      - academy-network
+    restart: unless-stopped
+
+networks:
+  academy-network:
+    external: true

@@ -1,0 +1,17 @@
+services:
+  codecrypto.tick3t-admin:
+    container_name: tick3t-admin.codecrypto
+    build: .
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tick3t-admin.rule=host(`tick3t-admin.codecrypto.academy`)"
+      - "traefik.http.routers.tick3t-admin.entrypoints=websecure"
+      - "traefik.http.routers.tick3t-admin.tls.certresolver=le"
+      - "traefik.http.services.tick3t-admin.loadbalancer.server.port=3007"
+    networks:
+      - academy-network
+    restart: unless-stopped
+
+networks:
+  academy-network:
+    external: true

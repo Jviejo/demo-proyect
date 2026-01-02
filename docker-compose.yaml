@@ -1,0 +1,21 @@
+services:
+  anvil-node:
+    image: ghcr.io/foundry-rs/foundry
+    container_name: anvil-node
+    entrypoint: anvil --host 0.0.0.0 --port 8558 --chain-id 91633 --code-size-limit 999999
+    ports:
+      - "8558:8558"
+    networks:
+      - academy-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rpc.rule=Host(`rpc.codecrypto.academy`)"
+      - "traefik.http.routers.rpc.entrypoints=websecure"
+      - "traefik.http.routers.rpc.tls=true"
+      - "traefik.http.routers.rpc.tls.certresolver=le"
+      - "traefik.http.services.rpc.loadbalancer.server.port=8558"
+
+networks:
+ academy-network:
+   external: true

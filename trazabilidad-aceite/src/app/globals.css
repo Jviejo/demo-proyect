@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --olive-dark: #4A5D23;
+  --earth-dark: #654321;
+  --oil-dark: #B8860B;
+  --navy-blue: #00005C;
+  --slate-grey: #2F4F4F;
+}
+
+@layer base {
+  body {
+    @apply flex flex-col min-h-screen m-0 p-0 overflow-x-hidden bg-background text-foreground;
+  }
+
+  main {
+    @apply flex flex-col flex-1 w-full;
+  }
+
+  h1 {
+    @apply text-title font-title text-olive-600;
+  }
+
+  h2 {
+    @apply text-subtitle font-body text-earth-500;
+  }
+
+  p {
+    @apply text-body font-body text-earth-400;
+  }
+}
+
+@layer components {
+  .header-container {
+    @apply flex justify-center bg-gradient-to-r from-olive-50/5 to-oil-400/5 backdrop-blur-md border-b border-olive-600/10;
+  }
+
+  .header-content {
+    @apply w-full max-w-7xl px-8 h-[73px] flex items-center justify-between;
+  }
+
+  .header-info-container {
+    @apply flex items-center gap-1 min-w-fit;
+  }
+
+  .header-text-container {
+    @apply text-right whitespace-nowrap flex-col gap-6;
+  }
+
+  .header-role {
+    @apply text-2xl font-bold mb-6;
+  }
+
+  .header-account {
+    @apply text-xl;
+  }
+
+  .header-icon {
+    @apply w-6 h-6 stroke-olive-600 bg-transparent fill-transparent;
+  }
+
+  .header-icon-btn {
+    @apply bg-transparent;
+  }
+
+  .custom-heading {
+    @apply text-title font-title text-olive-600 text-center;
+  }
+
+  .custom-subtitle {
+    @apply text-subtitle font-body text-slate-500 text-center;
+  }
+
+  .custom-button {
+    @apply text-body font-title text-earth-500 text-center;
+  }
+
+  .company-access-btn {
+    @apply font-title text-white font-medium bg-olive-600 
+           w-[200px] h-12 flex items-center justify-center 
+           mx-auto mt-12 rounded-xl transition-all duration-300 
+           shadow-md hover:bg-oil-500 hover:-translate-y-0.5 
+           hover:shadow-lg active:translate-y-0.5 active:shadow-sm;
+  }
+
+  .company-access-btn span {
+    @apply flex items-center gap-2 leading-none;
+  }
+
+  .company-access-btn svg {
+    @apply w-4 h-4 stroke-white mt-px;
+  }
+
+  .qr-button {
+    @apply text-slate-500 w-full h-full flex items-center justify-center;
+  }
+
+  .qr-button-container {
+    @apply relative w-full aspect-square flex items-center justify-center mx-auto;
+  }
+
+  .qr-button-container::before {
+    @apply content-[''] absolute w-full h-full border-4 border-slate-500 rounded-lg pointer-events-none transition-all duration-300;
+  }
+
+  /* Estilos para Leaflet */
+  .leaflet-container {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .custom-marker-icon {
+    background: none;
+    border: none;
+  }
+
+  /* Personalización de los controles de ruta */
+  .leaflet-routing-container {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 0.875rem;
+  }
+
+  .leaflet-routing-alt {
+    max-height: none !important;
+  }
+
+  .leaflet-routing-geocoder input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+  }
+}
+
+@layer utilities {
+  .bubble {
+    @apply absolute rounded-full bg-gradient-radial from-oil-300 via-oil-400/40 to-transparent
+           shadow-[inset_-5px_-5px_10px_rgba(0,0,0,0.1),inset_5px_5px_10px_rgba(255,255,255,0.8),0_0_20px_rgba(255,215,0,0.3)]
+           opacity-30 animate-float pointer-events-none backdrop-blur-sm will-change-transform;
+  }
+
+  .bubble-xs {
+    @apply w-6 h-6;
+  }
+
+  .bubble-sm {
+    @apply w-12 h-12;
+  }
+
+  .bubble-md {
+    @apply w-24 h-24;
+  }
+
+  .bubble-lg {
+    @apply w-36 h-36;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+
+  20% {
+    transform: translate(25px, -35px) rotate(120deg) scale(1.1);
+  }
+
+  40% {
+    transform: translate(-20px, -45px) rotate(240deg) scale(0.9);
+  }
+
+  60% {
+    transform: translate(-30px, -25px) rotate(360deg) scale(1.05);
+  }
+
+  80% {
+    transform: translate(15px, -15px) rotate(480deg) scale(0.95);
+  }
+
+  100% {
+    transform: translate(0, 0) rotate(720deg) scale(1);
+  }
+}
