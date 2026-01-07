@@ -1,0 +1,9 @@
+[submodule "trazabilidad-demo/smart_contracts/lib/forge-std"]
+	path = trazabilidad-demo/smart_contracts/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "hotel-rooms/smart-contract-hoteles/lib/forge-std"]
+	path = hotel-rooms/smart-contract-hoteles/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "hotel-rooms/smart-contract-hoteles/lib/openzeppelin-contracts"]
+	path = hotel-rooms/smart-contract-hoteles/lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
