@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'success' | 'danger' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'blood' | 'blockchain' | 'medical' | 'danger' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -19,7 +19,9 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-primary-600 hover:bg-primary-700 text-white shadow-md hover:shadow-lg',
   secondary: 'bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg',
-  success: 'bg-success-600 hover:bg-success-700 text-white shadow-md hover:shadow-lg',
+  blood: 'bg-blood-600 hover:bg-blood-700 text-white shadow-md hover:shadow-lg',
+  blockchain: 'bg-blockchain-600 hover:bg-blockchain-700 text-white shadow-md hover:shadow-lg',
+  medical: 'bg-medical-600 hover:bg-medical-700 text-white shadow-md hover:shadow-lg',
   danger: 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg',
   ghost: 'bg-transparent hover:bg-gray-100 text-gray-700 border border-gray-300',
 };
@@ -55,7 +57,9 @@ export const Button: React.FC<ButtonProps> = ({
           'w-full': fullWidth,
         },
         variant === 'primary' && 'focus:ring-primary-500',
-        variant === 'success' && 'focus:ring-success-500',
+        variant === 'blood' && 'focus:ring-blood-500',
+        variant === 'blockchain' && 'focus:ring-blockchain-500',
+        variant === 'medical' && 'focus:ring-medical-500',
         variant === 'danger' && 'focus:ring-red-500',
         className
       )}
