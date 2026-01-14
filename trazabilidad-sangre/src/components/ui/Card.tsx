@@ -27,8 +27,8 @@ const variantClasses: Record<CardVariant, string> = {
 const stateClasses: Record<CardState, string> = {
   default: '',
   loading: 'opacity-70 pointer-events-none',
-  error: 'border-red-300 bg-red-50',
-  success: 'border-success-300 bg-success-50',
+  error: 'border-blood-300 bg-blood-50',
+  success: 'border-medical-300 bg-medical-50',
 };
 
 export const Card: React.FC<CardProps> = ({
@@ -67,7 +67,7 @@ export const Card: React.FC<CardProps> = ({
     >
       {state === 'loading' && (
         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-10">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blockchain-600"></div>
         </div>
       )}
 
@@ -88,8 +88,8 @@ export const Card: React.FC<CardProps> = ({
       )}
 
       {state === 'error' && (
-        <div className="px-6 py-3 bg-red-100 border-t border-red-200">
-          <p className="text-sm text-red-700 flex items-center gap-2">
+        <div className="px-6 py-3 bg-blood-100 border-t border-blood-200">
+          <p className="text-sm text-blood-700 flex items-center gap-2">
             <svg
               className="h-4 w-4"
               fill="none"
@@ -109,8 +109,8 @@ export const Card: React.FC<CardProps> = ({
       )}
 
       {state === 'success' && (
-        <div className="px-6 py-3 bg-success-100 border-t border-success-200">
-          <p className="text-sm text-success-700 flex items-center gap-2">
+        <div className="px-6 py-3 bg-medical-100 border-t border-medical-200">
+          <p className="text-sm text-medical-700 flex items-center gap-2">
             <svg
               className="h-4 w-4"
               fill="none"
