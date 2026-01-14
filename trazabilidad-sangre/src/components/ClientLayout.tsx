@@ -4,6 +4,7 @@ import React, { ReactNode } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import PageTransition from './PageTransition';
+import { Wallet } from './ConnectWalletButton';
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -11,7 +12,7 @@ interface ClientLayoutProps {
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
-    <>
+    <Wallet>
       <Header />
       <main>
         <PageTransition>
@@ -19,6 +20,6 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         </PageTransition>
       </main>
       <Footer />
-    </>
+    </Wallet>
   );
 }

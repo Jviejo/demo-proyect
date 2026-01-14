@@ -65,7 +65,6 @@ export default function OurPromise() {
         <HeroSection
           title="Nuestro Compromiso Contigo"
           subtitle="4 promesas fundamentales que guían cada interacción en nuestra plataforma"
-          backgroundImage="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1920&q=80"
           height="md"
         />
 

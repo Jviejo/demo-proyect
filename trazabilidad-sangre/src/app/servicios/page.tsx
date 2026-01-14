@@ -85,7 +85,6 @@ export default function Servicios() {
         <HeroSection
           title="Servicios Profesionales Blockchain"
           subtitle="Soluciones integrales para transformar tu gestión de productos sanguíneos"
-          backgroundImage="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1920&q=80"
           height="md"
         />
 
