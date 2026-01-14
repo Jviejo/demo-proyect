@@ -1,5 +1,7 @@
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import Web3 from 'web3';
+import { abi as abiTracker } from './contracts/BloodTracker';
 
 /**
  * Trunca una dirección Ethereum para mostrarla de forma compacta
@@ -136,4 +138,50 @@ export function getEventTypeName(event: string): string {
   };
 
   return events[event] || event;
+}
+
+/**
+ * Obtiene el nombre de una compañía desde el contrato BloodTracker
+ * @param address - Dirección Ethereum de la compañía
+ * @returns Nombre de la compañía o dirección truncada si no se encuentra
+ */
+export async function getCompanyName(address: string): Promise<string> {
+  if (!address) return '';
+
+  try {
+    // Inicializar Web3 con el proveedor correcto
+    const web3 = new Web3(
+      typeof window !== 'undefined' && (window as any).ethereum
+        ? (window as any).ethereum
+        : process.env.NEXT_PUBLIC_RPC_URL || 'http://localhost:8545'
+    );
+
+    // Crear instancia del contrato BloodTracker
+    const contractAddress = process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS;
+
+    if (!contractAddress) {
+      console.error('BloodTracker contract address not configured');
+      return truncateAddress(address);
+    }
+
+    const contract = new web3.eth.Contract(abiTracker, contractAddress);
+
+    // Llamar al mapping público companies(address)
+    const company = await contract.methods.companies(address).call();
+
+    // El mapping retorna un objeto con { name, location, role }
+    const companyData = company as { name: string; location: string; role: number };
+
+    // Si tiene nombre, retornarlo
+    if (companyData.name && companyData.name.trim() !== '') {
+      return companyData.name;
+    }
+
+    // Si no tiene nombre, retornar dirección truncada
+    return truncateAddress(address);
+  } catch (error) {
+    console.error('Error fetching company name:', error);
+    // En caso de error, retornar dirección truncada
+    return truncateAddress(address);
+  }
 }
