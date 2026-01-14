@@ -46,13 +46,12 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReload = () => {
-    // Reset error state and reload
+    // Reset error state - let React re-render
     this.setState({
       hasError: false,
       error: null,
       errorInfo: null,
     });
-    window.location.reload();
   };
 
   render() {
