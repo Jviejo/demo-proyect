@@ -1,6 +1,8 @@
 import React, { ReactNode } from "react";
 import Header from "./../components/Header";
 import Footer from "./../components/Footer";
+import ToastProvider from "./../components/ui/ToastProvider";
+import "./globals.css";
 
 interface AppContainerProps {
   children: React.ReactNode;
@@ -27,6 +29,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <main>{children}</main>
           <Footer />
         </div>
+        <ToastProvider />
       </body>
     </html>
   );
