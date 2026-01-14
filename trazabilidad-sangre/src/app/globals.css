@@ -824,3 +824,38 @@ h6 {
 .wallet-option button:hover {
   background-color: #45a049;
 }
+
+/* Toast Custom Styles */
+.custom-toast {
+  border-radius: 10px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.custom-toast-body {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.95rem;
+}
+
+.custom-toast-progress {
+  background: linear-gradient(to right, var(--color-primary-500), var(--color-success-500));
+}
+
+.Toastify__toast--success {
+  background-color: var(--color-success-600);
+  color: white;
+}
+
+.Toastify__toast--error {
+  background-color: #dc2626;
+  color: white;
+}
+
+.Toastify__toast--info {
+  background-color: var(--color-primary-600);
+  color: white;
+}
+
+.Toastify__toast--warning {
+  background-color: #f59e0b;
+  color: white;
+}
