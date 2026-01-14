@@ -26,25 +26,25 @@ const statusConfig: Record<BadgeStatus, { label: string; colors: Record<BadgeVar
   processing: {
     label: 'En Proceso',
     colors: {
-      solid: 'bg-blue-500 text-white',
-      outlined: 'border-2 border-blue-500 text-blue-700',
-      soft: 'bg-blue-100 text-blue-700',
+      solid: 'bg-blockchain-600 text-white',
+      outlined: 'border-2 border-blockchain-600 text-blockchain-700',
+      soft: 'bg-blockchain-100 text-blockchain-700',
     },
   },
   completed: {
     label: 'Completado',
     colors: {
-      solid: 'bg-success-600 text-white',
-      outlined: 'border-2 border-success-600 text-success-700',
-      soft: 'bg-success-100 text-success-700',
+      solid: 'bg-medical-600 text-white',
+      outlined: 'border-2 border-medical-600 text-medical-700',
+      soft: 'bg-medical-100 text-medical-700',
     },
   },
   cancelled: {
     label: 'Cancelado',
     colors: {
-      solid: 'bg-red-500 text-white',
-      outlined: 'border-2 border-red-500 text-red-700',
-      soft: 'bg-red-100 text-red-700',
+      solid: 'bg-blood-600 text-white',
+      outlined: 'border-2 border-blood-600 text-blood-700',
+      soft: 'bg-blood-100 text-blood-700',
     },
   },
 };
@@ -75,9 +75,9 @@ export const Badge: React.FC<BadgeProps> = ({
       <span
         className={clsx('w-2 h-2 rounded-full', {
           'bg-yellow-400': status === 'pending',
-          'bg-blue-400': status === 'processing',
-          'bg-success-400': status === 'completed',
-          'bg-red-400': status === 'cancelled',
+          'bg-blockchain-400': status === 'processing',
+          'bg-medical-400': status === 'completed',
+          'bg-blood-400': status === 'cancelled',
           'animate-ping': shouldPulse,
         })}
       />
