@@ -97,7 +97,7 @@ export default function Team() {
         <HeroSection
           title="Nuestro Equipo"
           subtitle="Un equipo multidisciplinar de expertos en medicina, blockchain y tecnología"
-          backgroundImage="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80"
+          backgroundImage="/images/content/team/team-hero.webp"
         />
 
         {/* Team Stats */}

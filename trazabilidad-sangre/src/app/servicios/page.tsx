@@ -12,7 +12,7 @@ export default function Servicios() {
       title: "Consultancy",
       subtitle: "Asesoramiento Estratégico en Blockchain",
       description: "Te guiamos en cada paso de tu transformación digital hacia blockchain. Desde análisis de viabilidad hasta diseño de arquitectura, nuestros expertos te ayudan a tomar decisiones informadas.",
-      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80",
+      image: "/images/content/services/consultancy.webp",
       features: [
         "Análisis de viabilidad y ROI",
         "Diseño de arquitectura blockchain",
@@ -29,7 +29,7 @@ export default function Servicios() {
       title: "Implementation",
       subtitle: "Despliegue e Integración Completa",
       description: "Implementamos la solución blockchain end-to-end en tu infraestructura existente. Configuración de nodos, despliegue de smart contracts y conexión con sistemas legacy.",
-      image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80",
+      image: "/images/content/services/implementation.webp",
       features: [
         "Configuración de infraestructura blockchain",
         "Despliegue de smart contracts",
@@ -46,7 +46,7 @@ export default function Servicios() {
       title: "Infrastructure",
       subtitle: "Gestión y Mantenimiento de Nodos",
       description: "Nos encargamos de toda la infraestructura técnica. Hosting de nodos blockchain, monitoreo 24/7, backups automáticos y escalamiento según tus necesidades.",
-      image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80",
+      image: "/images/content/services/infrastructure.webp",
       features: [
         "Hosting de nodos blockchain",
         "Monitoreo 24/7 y alertas",
@@ -63,7 +63,7 @@ export default function Servicios() {
       title: "Development",
       subtitle: "Desarrollo Custom de Smart Contracts",
       description: "Desarrollamos smart contracts personalizados para tus necesidades específicas. Testing, auditoría y optimización de gas fees incluidos.",
-      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
+      image: "/images/content/services/development.webp",
       features: [
         "Smart contracts custom en Solidity",
         "Testing automatizado completo",

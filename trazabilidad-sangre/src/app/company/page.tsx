@@ -64,25 +64,25 @@ export default function Company() {
     {
       title: "Innovación Tecnológica",
       description: "Utilizamos blockchain y tecnología NFT para revolucionar la gestión de productos sanguíneos. Nuestra plataforma es la primera en Europa en combinar Ethereum con trazabilidad hospitalaria.",
-      imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80", // Placeholder: Technology/Innovation
+      imageUrl: "/images/content/company/values-2.webp",
       position: "left" as const
     },
     {
       title: "Confianza y Seguridad",
       description: "Cada transacción queda registrada de forma inmutable. Los contratos inteligentes garantizan el cumplimiento automático de normativas y protocolos de seguridad sin intervención manual.",
-      imageUrl: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80", // Placeholder: Security/Trust
+      imageUrl: "/images/content/company/lab.webp",
       position: "right" as const
     },
     {
       title: "Excelencia Operativa",
       description: "Nuestro equipo multidisciplinar combina experiencia médica, blockchain y desarrollo de software para ofrecer soluciones robustas que cumplen los más altos estándares de calidad.",
-      imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80", // Placeholder: Team/Collaboration
+      imageUrl: "/images/content/company/values-1.webp",
       position: "left" as const
     },
     {
       title: "Sostenibilidad",
       description: "Optimizamos recursos reduciendo pérdidas y desperdicios. Nuestro sistema ha ayudado a reducir en un 35% el descarte de productos sanguíneos por caducidad o pérdida de trazabilidad.",
-      imageUrl: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&q=80", // Placeholder: Sustainability/Impact
+      imageUrl: "/images/content/company/values-1.webp",
       position: "right" as const
     }
   ];
@@ -94,7 +94,7 @@ export default function Company() {
         <HeroSection
           title="Transformando la Trazabilidad de Productos Sanguíneos"
           subtitle="Blockchain, NFTs y tecnología de vanguardia al servicio de la salud pública"
-          backgroundImage="https://images.unsplash.com/photo-1579154204845-3069a0c8f004?w=1920&q=80"
+          backgroundImage="/images/content/company/hero.webp"
           ctaText="Conoce Nuestros Servicios"
           ctaLink="#services"
         />

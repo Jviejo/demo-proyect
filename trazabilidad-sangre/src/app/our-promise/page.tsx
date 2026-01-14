@@ -11,7 +11,7 @@ export default function OurPromise() {
     {
       title: "Fast Delivery ⚡",
       description: "Garantizamos entregas rápidas y eficientes de productos sanguíneos a través de nuestra red optimizada de distribución. Nuestra tecnología blockchain permite coordinar el transporte en tiempo real, reduciendo tiempos de espera críticos.",
-      image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&q=80",
+      image: "/images/content/promises/fast-delivery.webp",
       icon: "⚡",
       stats: [
         { label: "Tiempo promedio", value: "< 2h" },
@@ -23,7 +23,7 @@ export default function OurPromise() {
     {
       title: "Secure Tracking 🔒",
       description: "Cada unidad de sangre y derivado está protegida por blockchain inmutable. Registramos temperatura, ubicación y manipulación en cada punto de la cadena de suministro, garantizando integridad total del producto.",
-      image: "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?w=800&q=80",
+      image: "/images/content/promises/secure-tracking.webp",
       icon: "🔒",
       stats: [
         { label: "Registros inmutables", value: "100%" },
@@ -35,7 +35,7 @@ export default function OurPromise() {
     {
       title: "Real-time Updates 🔄",
       description: "Actualizaciones instantáneas sobre el estado de tus productos. Notificaciones automáticas para eventos críticos como cambios de temperatura, llegadas programadas y confirmaciones de entrega mediante smart contracts.",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
+      image: "/images/content/promises/realtime-updates.webp",
       icon: "🔄",
       stats: [
         { label: "Latencia", value: "< 3 seg" },
@@ -47,7 +47,7 @@ export default function OurPromise() {
     {
       title: "Easy to Use 🎯",
       description: "Interfaz intuitiva diseñada para profesionales de la salud. Sin necesidad de conocimientos técnicos de blockchain: nuestra plataforma abstrae la complejidad y ofrece una experiencia simple y directa.",
-      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+      image: "/images/content/promises/easy-to-use.webp",
       icon: "🎯",
       stats: [
         { label: "Onboarding", value: "< 10 min" },

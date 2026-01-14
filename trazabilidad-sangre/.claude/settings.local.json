@@ -16,7 +16,9 @@
       "Bash(npm run build:*)",
       "Bash(git commit:*)",
       "Bash(npx tsc:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(find:*)",
+      "Bash(node download-images.js:*)"
     ]
   }
 }
