@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(anvil:*)",
+      "Bash(make deploy-anvil:*)",
+      "Bash(forge script:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(cast send:*)",
+      "Bash(cast call:*)",
+      "Bash(cast logs:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore\\(deps\\): agregar librerías UI para mejoras visuales\n\n- framer-motion: animaciones\n- recharts: gráficos dashboards\n- react-toastify: notificaciones\n- date-fns: formateo fechas\n- clsx: utilidad classNames\nEOF\n\\)\")",
+      "Bash(npm run build:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
