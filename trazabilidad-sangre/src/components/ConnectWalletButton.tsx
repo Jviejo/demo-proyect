@@ -7,6 +7,7 @@ import GetWalletModal from "@/components/GetWalletModal";
 import { abi as abiTracker } from "@/lib/contracts/BloodTracker"
 import { abi as abiDonation } from "@/lib/contracts/BloodDonation"
 import { abi as abiDerivative } from "@/lib/contracts/BloodDerivative"
+import { truncateAddress } from "@/lib/helpers"
 
 type WalletContextType = {
   account: string | null;
@@ -311,9 +312,7 @@ const WalletButton = () => {
                 className="wallet-logo"
               />
               {web3?.utils.isAddress(account)
-                ? `${account.substring(0, 6)} ... ${account.substring(
-                  account.length - 4
-                )}`
+                ? truncateAddress(account)
                 : account}
               <div
                 className="menu-icon"

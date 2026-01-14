@@ -11,7 +11,7 @@ import ConnectWalletButton, { useWallet } from "@/components/ConnectWalletButton
 import GetWalletModal from "@/components/GetWalletModal";
 import Tooltip from "./ui/Tooltip";
 import Badge from "./ui/Badge";
-import { truncateAddress } from "@/lib/helpers";
+import { truncateAddress, formatEther } from "@/lib/helpers";
 
 const roles = [
   { name: "Register", path: "/role-registro" },
@@ -74,8 +74,7 @@ const Header = () => {
       if (account && web3) {
         try {
           const balanceWei = await web3.eth.getBalance(account);
-          const balanceEth = web3.utils.fromWei(balanceWei, "ether");
-          setBalance(parseFloat(balanceEth).toFixed(4));
+          setBalance(formatEther(balanceWei, 4));
         } catch (error) {
           console.error("Error fetching balance:", error);
         }

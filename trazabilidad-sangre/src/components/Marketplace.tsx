@@ -13,6 +13,7 @@ import { ProductDetailModal } from './marketplace/ProductDetailModal';
 import { PriceFilter } from './marketplace/PriceFilter';
 import { Skeleton } from './ui/Skeleton';
 import { showTransactionSuccess, showTransactionError, showTransactionPending } from '@/lib/toast';
+import { formatEther } from '@/lib/helpers';
 
 export const getDerivativeTypeFromNumber = (derivativeType: number) => {
   switch (derivativeType) {
@@ -109,7 +110,7 @@ function Marketplace() {
             typeString: getDerivativeTypeFromNumber(derivativeType),
             typeNumber: derivativeType,
             price: marketplaceData[0].toString(),
-            priceEther: web3.utils.fromWei(Number(marketplaceData[0]), 'ether'),
+            priceEther: formatEther(marketplaceData[0].toString()),
             seller: marketplaceData[1].toString(),
             image: getImageFromDerivative(derivativeType),
           });
