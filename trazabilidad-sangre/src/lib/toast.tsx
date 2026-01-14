@@ -1,3 +1,4 @@
+import React from 'react';
 import { toast, ToastOptions, Id } from 'react-toastify';
 
 // Configuración por defecto para los toasts
