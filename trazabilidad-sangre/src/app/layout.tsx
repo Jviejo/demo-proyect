@@ -1,8 +1,21 @@
 import React, { ReactNode } from "react";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import ClientLayout from "./../components/ClientLayout";
 import ToastProvider from "./../components/ui/ToastProvider";
 import ErrorBoundary from "./../components/ErrorBoundary";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 // Force dynamic rendering for all pages to avoid wallet SSR issues
 export const dynamic = 'force-dynamic';
