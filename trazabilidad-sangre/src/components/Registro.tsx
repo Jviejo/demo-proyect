@@ -1,137 +1,295 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "./../app/globals.css";
 import styles from "./Registro.module.css";
-import GetWalletModal from "@/components/GetWalletModal";
 import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
 import { useWallet } from "./ConnectWalletButton";
 import { useRouter } from "next/navigation";
+import StepIndicator from "./registro/StepIndicator";
+import RoleSelection from "./registro/RoleSelection";
+import CompanyInfo from "./registro/CompanyInfo";
+import ConfirmationStep from "./registro/ConfirmationStep";
+import Button from "./ui/Button";
+import { showTransactionSuccess, showTransactionError, showTransactionPending } from "@/lib/toast";
 
-
-const roles = ["Donor", "Company"];
-const companyRoles = ["Collector Center", "Laboratory", "Trader"];
+const STEPS = ["Rol", "Información", "Confirmación"];
 
 const Register = () => {
   const { account, web3, setRole } = useWallet();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+
+  // Form state
   const [companyRole, setCompanyRole] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [location, setLocation] = useState("");
   const [registerSanitario, setRegisterSanitario] = useState("");
-  const [bloodType, setBloodType] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [showWalletModal, setShowWalletModal] = useState(false);
-  const [txHash, setTxHash] = useState<string | null>();
-  const router = useRouter();
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (!companyName || !registerSanitario || !companyRole || !location) {
-      setErrorMessage("All fields are required");
-      return;
-    }
-
-    setErrorMessage("");
-    var roleNum
-    switch (companyRole) {
-      case "Collector Center":
-        roleNum = 1;
-        break;
-      case "Laboratory":
-        roleNum = 2;
-        break;
-      case "Trader":
-        roleNum = 3;
-        break;
+  const canGoNext = () => {
+    switch (currentStep) {
+      case 1:
+        return companyRole !== "";
+      case 2:
+        return (
+          companyName.trim().length >= 3 &&
+          location.trim().length >= 3 &&
+          registerSanitario.trim().length >= 5
+        );
+      case 3:
+        return true;
       default:
-        roleNum = 0;
+        return false;
+    }
+  };
+
+  const handleNext = () => {
+    if (canGoNext() && currentStep < STEPS.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
+    switch (field) {
+      case "companyName":
+        setCompanyName(value);
+        break;
+      case "location":
+        setLocation(value);
+        break;
+      case "registerSanitario":
+        setRegisterSanitario(value);
         break;
     }
-    const contractTracker = new web3.eth.Contract(abiTracker, process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS);
-    const receipt = await contractTracker.methods.signUp(companyName, location, roleNum).send({ from: account, gas: '1000000', gasPrice: 1000000000 });
-    setTxHash(receipt.transactionHash);
-    setRole(roleNum);
-    router.push("/all-role-grid")
+  };
+
+  const handleSubmit = async () => {
+    if (!canGoNext()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Map role to number
+      let roleNum;
+      switch (companyRole) {
+        case "Collector Center":
+          roleNum = 1;
+          break;
+        case "Laboratory":
+          roleNum = 2;
+          break;
+        case "Trader":
+          roleNum = 3;
+          break;
+        default:
+          roleNum = 0;
+          break;
+      }
+
+      // Show pending toast
+      const pendingToastId = showTransactionPending();
+
+      // Submit transaction
+      const contractTracker = new web3.eth.Contract(
+        abiTracker,
+        process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS
+      );
+
+      const receipt = await contractTracker.methods
+        .signUp(companyName, location, roleNum)
+        .send({ from: account, gas: "1000000", gasPrice: 1000000000 });
+
+      // Update role in context
+      setRole(roleNum);
+
+      // Show success toast
+      showTransactionSuccess(receipt.transactionHash);
+
+      // Navigate to dashboard
+      setTimeout(() => {
+        router.push("/all-role-grid");
+      }, 2000);
+    } catch (error: any) {
+      console.error("Error registering:", error);
+      showTransactionError(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 300 : -300,
+      opacity: 0,
+    }),
+  };
+
+  const [direction, setDirection] = useState(0);
+
+  const paginate = (newDirection: number) => {
+    setDirection(newDirection);
   };
 
   return (
     <section className={styles.section}>
-      <h2 className={styles.title}>Company register form</h2>
-      <p>You will have only one wallet per company.</p>
-      <form onSubmit={handleSubmit} className={styles.registerForm}>
-        {
-          <>
-            <div className={styles.formGroup}>
-              <label htmlFor="companyName" className={styles.formLabel}>
-                Name of the Company
-              </label>
-              <input
-                type="text"
-                id="companyName"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className={styles.formInput}
-                required
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Registro de Compañía
+          </h2>
+          <p className="text-gray-600">
+            Completa el proceso de registro para unirte a la red de trazabilidad
+          </p>
+        </div>
+
+        {/* Step Indicator */}
+        <StepIndicator currentStep={currentStep} steps={STEPS} />
+
+        {/* Step Content with Animation */}
+        <div className="relative min-h-[500px]">
+          <AnimatePresence initial={false} custom={direction} mode="wait">
+            <motion.div
+              key={currentStep}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 },
+              }}
+            >
+              {currentStep === 1 && (
+                <RoleSelection
+                  selectedRole={companyRole}
+                  onRoleSelect={setCompanyRole}
+                />
+              )}
+
+              {currentStep === 2 && (
+                <CompanyInfo
+                  companyName={companyName}
+                  location={location}
+                  registerSanitario={registerSanitario}
+                  onFieldChange={handleFieldChange}
+                />
+              )}
+
+              {currentStep === 3 && (
+                <ConfirmationStep
+                  companyRole={companyRole}
+                  companyName={companyName}
+                  location={location}
+                  registerSanitario={registerSanitario}
+                  account={account}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between items-center mt-8 max-w-2xl mx-auto">
+          {/* Previous Button */}
+          <Button
+            onClick={() => {
+              paginate(-1);
+              handlePrev();
+            }}
+            variant="ghost"
+            disabled={currentStep === 1 || isSubmitting}
+            className="min-w-[120px]"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
               />
-            </div>
-            <div className={styles.formGroup}>
-              <label htmlFor="location" className={styles.formLabel}>
-                Location
-              </label>
-              <input
-                type="text"
-                id="location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className={styles.formInput}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label htmlFor="registerSanitario" className={styles.formLabel}>
-                Register Sanitario
-              </label>
-              <input
-                type="text"
-                id="registerSanitario"
-                value={registerSanitario}
-                onChange={(e) => setRegisterSanitario(e.target.value)}
-                className={styles.formInput}
-                required
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label htmlFor="companyRole" className={styles.formLabel}>
-                Company Role
-              </label>
-              <select
-                id="companyRole"
-                value={companyRole}
-                onChange={(e) => setCompanyRole(e.target.value)}
-                className={styles.formSelect}
-                required>
-                <option value="" disabled>
-                  Select a company role
-                </option>
-                {companyRoles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </>
-        }
-        {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
-        <button type="submit" className={styles.submitButton}>
-          Submit
-        </button>
-      </form>
-      {showWalletModal && (
-        <GetWalletModal onClose={() => setShowWalletModal(false)} />
-      )}
-      {txHash ? <h1>The txHash is {txHash}</h1> : <></>}
+            </svg>
+            Anterior
+          </Button>
+
+          {/* Step Counter */}
+          <div className="text-sm text-gray-500">
+            Paso {currentStep} de {STEPS.length}
+          </div>
+
+          {/* Next/Submit Button */}
+          {currentStep < STEPS.length ? (
+            <Button
+              onClick={() => {
+                paginate(1);
+                handleNext();
+              }}
+              variant="primary"
+              disabled={!canGoNext() || isSubmitting}
+              className="min-w-[120px]"
+            >
+              Siguiente
+              <svg
+                className="w-5 h-5 ml-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </Button>
+          ) : (
+            <Button
+              onClick={handleSubmit}
+              variant="success"
+              disabled={!canGoNext() || isSubmitting}
+              loading={isSubmitting}
+              className="min-w-[120px]"
+            >
+              {isSubmitting ? "Registrando..." : "Confirmar Registro"}
+            </Button>
+          )}
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mt-8 max-w-2xl mx-auto">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <motion.div
+              className="bg-primary-600 h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${(currentStep / STEPS.length) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        </div>
+      </div>
     </section>
   );
 };
