@@ -289,14 +289,14 @@ function DonationCenter() {
                     <div className="p-6">
                         <div className="flex items-center justify-between flex-wrap gap-4">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                                <h1 className="text-3xl font-bold text-slate-900 mb-2">
                                     Dashboard Centro de Donación
                                 </h1>
-                                <div className="flex items-center gap-4 text-gray-600">
+                                <div className="flex items-center gap-4 text-slate-600">
                                     <Tooltip content={account || ''}>
                                         <span className="flex items-center gap-2">
                                             <span className="font-semibold">Dirección:</span>
-                                            <code className="px-2 py-1 bg-gray-100 rounded text-sm">
+                                            <code className="px-2 py-1 bg-slate-100 rounded text-sm">
                                                 {truncateAddress(account || '', 8, 6)}
                                             </code>
                                         </span>
@@ -351,7 +351,7 @@ function DonationCenter() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="mb-8"
             >
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">
                     Acciones Rápidas
                 </h2>
                 <Grid cols={{ xs: 1, md: 2 }} gap="md">
@@ -391,14 +391,14 @@ function DonationCenter() {
                 >
                     <Card variant="elevated">
                         <div className="p-6">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                            <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                                 <span>➕</span>
                                 Nueva Donación
                             </h2>
 
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
-                                    <label htmlFor="donorAddress" className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label htmlFor="donorAddress" className="block text-sm font-semibold text-slate-700 mb-2">
                                         Dirección del Donante *
                                     </label>
                                     <input
@@ -410,8 +410,8 @@ function DonationCenter() {
                                             setFormErrors({ ...formErrors, donorAddress: '' })
                                         }}
                                         placeholder="0x..."
-                                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
-                                            formErrors.donorAddress ? 'border-red-500' : 'border-gray-300'
+                                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blood-500 focus:border-transparent transition-all ${
+                                            formErrors.donorAddress ? 'border-red-500' : 'border-slate-300'
                                         }`}
                                         disabled={isSubmitting}
                                     />
@@ -421,21 +421,21 @@ function DonationCenter() {
                                 </div>
 
                                 <div>
-                                    <label htmlFor="bloodType" className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label htmlFor="bloodType" className="block text-sm font-semibold text-slate-700 mb-2">
                                         Tipo de Sangre (Referencia)
                                     </label>
                                     <select
                                         id="bloodType"
                                         value={formData.bloodType}
                                         onChange={(e) => setFormData({ ...formData, bloodType: e.target.value })}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blood-500 focus:border-transparent transition-all"
                                         disabled={isSubmitting}
                                     >
                                         {BLOOD_TYPES.map(type => (
                                             <option key={type} value={type}>{type}</option>
                                         ))}
                                     </select>
-                                    <p className="mt-2 text-xs text-gray-500">
+                                    <p className="mt-2 text-xs text-slate-500">
                                         * Solo para referencia. El tipo de sangre no se guarda en blockchain.
                                     </p>
                                 </div>
@@ -464,7 +464,7 @@ function DonationCenter() {
                     >
                         <Card variant="elevated" className="h-full">
                             <div className="p-6">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                                <h2 className="text-2xl font-bold text-slate-900 mb-6">
                                     Distribución por Tipo de Sangre
                                 </h2>
                                 <ResponsiveContainer width="100%" height={300}>
@@ -506,7 +506,7 @@ function DonationCenter() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
             >
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">
                     Donaciones Recientes
                 </h2>
 
@@ -514,10 +514,10 @@ function DonationCenter() {
                     <Card variant="elevated">
                         <div className="p-12 text-center">
                             <div className="text-6xl mb-4">🩸</div>
-                            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                            <h3 className="text-xl font-semibold text-slate-700 mb-2">
                                 No hay donaciones registradas
                             </h3>
-                            <p className="text-gray-500">
+                            <p className="text-slate-500">
                                 Comienza registrando la primera donación usando el formulario.
                             </p>
                         </div>
@@ -538,10 +538,10 @@ function DonationCenter() {
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <span className="text-2xl">🩸</span>
                                                     <div>
-                                                        <h3 className="text-lg font-bold text-gray-800">
+                                                        <h3 className="text-lg font-bold text-slate-900">
                                                             Donación #{donation.tokenId}
                                                         </h3>
-                                                        <p className="text-sm text-gray-600">
+                                                        <p className="text-sm text-slate-600">
                                                             {formatDateTime(donation.donationDate)}
                                                         </p>
                                                     </div>
@@ -549,18 +549,18 @@ function DonationCenter() {
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                                     <div>
-                                                        <p className="text-sm text-gray-600 mb-1">
+                                                        <p className="text-sm text-slate-600 mb-1">
                                                             Donante:
                                                         </p>
                                                         <Tooltip content={donation.donorAddress}>
-                                                            <code className="text-sm font-semibold text-gray-800">
+                                                            <code className="text-sm font-semibold text-slate-900">
                                                                 {truncateAddress(donation.donorAddress)}
                                                             </code>
                                                         </Tooltip>
                                                     </div>
 
                                                     <div>
-                                                        <p className="text-sm text-gray-600 mb-1">
+                                                        <p className="text-sm text-slate-600 mb-1">
                                                             Tipo de Sangre:
                                                         </p>
                                                         <Badge
@@ -597,7 +597,7 @@ function DonationCenter() {
                 message={
                     <div className="space-y-2">
                         <p>¿Deseas registrar esta donación?</p>
-                        <div className="bg-gray-50 p-4 rounded-lg mt-4 space-y-2">
+                        <div className="bg-slate-50 p-4 rounded-lg mt-4 space-y-2">
                             <p className="text-sm">
                                 <span className="font-semibold">Donante:</span>{' '}
                                 <code className="text-xs">{truncateAddress(formData.donorAddress)}</code>
@@ -606,7 +606,7 @@ function DonationCenter() {
                                 <span className="font-semibold">Tipo de Sangre:</span> {formData.bloodType}
                             </p>
                         </div>
-                        <p className="text-xs text-gray-500 mt-4">
+                        <p className="text-xs text-slate-500 mt-4">
                             Esta acción creará una transacción en la blockchain.
                         </p>
                     </div>
