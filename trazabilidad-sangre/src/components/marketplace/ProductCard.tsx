@@ -24,19 +24,19 @@ export interface ProductCardProps {
 
 const derivativeTypeColors: Record<string, { bg: string; text: string; border: string }> = {
   PLASMA: {
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-800',
-    border: 'border-yellow-300',
+    bg: 'bg-amber-100',
+    text: 'text-amber-800',
+    border: 'border-amber-300',
   },
   ERYTHROCYTES: {
-    bg: 'bg-red-100',
-    text: 'text-red-800',
-    border: 'border-red-300',
+    bg: 'bg-blood-100',
+    text: 'text-blood-800',
+    border: 'border-blood-300',
   },
   PLATELETS: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-800',
-    border: 'border-blue-300',
+    bg: 'bg-blockchain-100',
+    text: 'text-blockchain-800',
+    border: 'border-blockchain-300',
   },
 };
 
@@ -75,9 +75,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   const priceEther = formatEther(price, 4);
   const typeColor = derivativeTypeColors[typeString] || {
-    bg: 'bg-gray-100',
-    text: 'text-gray-800',
-    border: 'border-gray-300',
+    bg: 'bg-slate-100',
+    text: 'text-slate-800',
+    border: 'border-slate-300',
   };
 
   return (
@@ -97,7 +97,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* Imagen del producto */}
-      <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+      <div className="relative h-48 w-full overflow-hidden bg-slate-100">
         <img
           src={image}
           alt={`${typeString} ${tokenId}`}
@@ -109,20 +109,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <div className="p-5 space-y-3">
         {/* Título */}
         <div>
-          <h3 className="text-lg font-bold text-gray-900">
+          <h3 className="text-lg font-bold text-slate-900">
             {typeString} #{tokenId}
           </h3>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Token ID: {tokenId}
           </p>
         </div>
 
         {/* Seller */}
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-gray-500">Vendedor:</span>
-          <span className="font-medium text-gray-700" title={seller}>
+          <span className="text-slate-500">Vendedor:</span>
+          <span className="font-medium text-slate-700" title={seller}>
             {isLoadingName ? (
-              <span className="animate-pulse bg-gray-200 rounded px-2 py-1">
+              <span className="animate-pulse bg-slate-200 rounded px-2 py-1">
                 Cargando...
               </span>
             ) : (
@@ -132,10 +132,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Precio destacado */}
-        <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-primary-50 to-success-50 rounded-lg p-4 border border-primary-200">
-          <FaEthereum className="text-primary-600 text-2xl" />
-          <span className="text-3xl font-bold text-gray-900">{priceEther}</span>
-          <span className="text-sm text-gray-600 mt-2">ETH</span>
+        <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-blockchain-50 to-medical-50 rounded-lg p-4 border border-blockchain-200">
+          <FaEthereum className="text-blockchain-600 text-2xl" />
+          <span className="text-3xl font-bold text-slate-900">{priceEther}</span>
+          <span className="text-sm text-slate-600 mt-2">ETH</span>
         </div>
 
         {/* Botones de acción */}
