@@ -10,9 +10,12 @@ import { Badge } from "../ui/Badge"
 import { Button } from "../ui/Button"
 import { ConfirmModal } from "../ui/ConfirmModal"
 import { Skeleton } from "../ui/Skeleton"
+import { Stat } from "../ui/Stat"
+import Grid from "../ui/Grid"
 import { truncateAddress, formatDate, formatDateTime, formatEther } from "@/lib/helpers"
 import { Tooltip } from "../ui/Tooltip"
 import { showTransactionSuccess, showTransactionError, showTransactionPending, showGenericError, showGenericSuccess } from "@/lib/toast"
+import { CalendarIcon, ChartBarIcon, BeakerIcon } from '@heroicons/react/24/solid'
 
 interface DonationInfo {
     tokenId: number
@@ -294,79 +297,33 @@ function DonationCenter() {
             </motion.div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                >
-                    <Card variant="elevated" className="h-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium mb-1">
-                                        Donaciones Hoy
-                                    </p>
-                                    <p className="text-4xl font-bold text-primary-600">
-                                        {stats.today}
-                                    </p>
-                                </div>
-                                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                                    <span className="text-3xl">📅</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                    <Card variant="elevated" className="h-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium mb-1">
-                                        Donaciones Este Mes
-                                    </p>
-                                    <p className="text-4xl font-bold text-success-600">
-                                        {stats.thisMonth}
-                                    </p>
-                                </div>
-                                <div className="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center">
-                                    <span className="text-3xl">📊</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                    <Card variant="elevated" className="h-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium mb-1">
-                                        Total Donaciones
-                                    </p>
-                                    <p className="text-4xl font-bold text-purple-600">
-                                        {stats.total}
-                                    </p>
-                                </div>
-                                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                                    <span className="text-3xl">🩸</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-            </div>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="mb-8"
+            >
+                <Grid cols={{ xs: 1, sm: 2, lg: 3 }} gap="md">
+                    <Stat
+                        icon={<CalendarIcon className="h-6 w-6" />}
+                        label="Donaciones Hoy"
+                        value={stats.today}
+                        color="blockchain"
+                    />
+                    <Stat
+                        icon={<ChartBarIcon className="h-6 w-6" />}
+                        label="Donaciones Este Mes"
+                        value={stats.thisMonth}
+                        color="medical"
+                    />
+                    <Stat
+                        icon={<BeakerIcon className="h-6 w-6" />}
+                        label="Total Donaciones"
+                        value={stats.total}
+                        color="blood"
+                    />
+                </Grid>
+            </motion.div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* Formulario Nueva Donación */}
