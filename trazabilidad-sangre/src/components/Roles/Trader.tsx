@@ -32,14 +32,14 @@ const navigationCards = [
         description: "Comprar derivados de sangre",
         icon: "🛒",
         path: "/marketplace",
-        gradient: "from-primary-500 to-primary-700"
+        gradient: "from-blockchain-500 to-blockchain-700"
     },
     {
         name: "Trazabilidad",
         description: "Rastrear productos",
         icon: "🔍",
         path: "/trace",
-        gradient: "from-success-500 to-success-700"
+        gradient: "from-medical-500 to-medical-700"
     }
 ]
 
@@ -221,14 +221,14 @@ function Trader() {
                     <div className="p-6">
                         <div className="flex items-center justify-between flex-wrap gap-4">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                                <h1 className="text-3xl font-bold text-slate-900 mb-2">
                                     Dashboard del Trader
                                 </h1>
-                                <div className="flex items-center gap-4 text-gray-600">
+                                <div className="flex items-center gap-4 text-slate-600">
                                     <Tooltip content={account || ''}>
                                         <span className="flex items-center gap-2">
                                             <span className="font-semibold">Dirección:</span>
-                                            <code className="px-2 py-1 bg-gray-100 rounded text-sm">
+                                            <code className="px-2 py-1 bg-slate-100 rounded text-sm">
                                                 {truncateAddress(account || '', 8, 6)}
                                             </code>
                                         </span>
@@ -283,7 +283,7 @@ function Trader() {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 className="mb-8"
             >
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">
                     Acciones Rápidas
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -331,7 +331,7 @@ function Trader() {
                 >
                     <Card variant="elevated">
                         <div className="p-6">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                            <h2 className="text-2xl font-bold text-slate-900 mb-6">
                                 Historial de Compras por Mes
                             </h2>
                             <ResponsiveContainer width="100%" height={300}>
@@ -375,7 +375,7 @@ function Trader() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
             >
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">
                     Historial de Compras
                 </h2>
 
@@ -383,10 +383,10 @@ function Trader() {
                     <Card variant="elevated">
                         <div className="p-12 text-center">
                             <div className="text-6xl mb-4">🛒</div>
-                            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                            <h3 className="text-xl font-semibold text-slate-700 mb-2">
                                 No hay compras registradas
                             </h3>
-                            <p className="text-gray-500 mb-6">
+                            <p className="text-slate-500 mb-6">
                                 Todavía no has realizado ninguna compra en el marketplace.
                             </p>
                             <Button variant="primary" onClick={() => handleNavigate('/marketplace')}>
@@ -414,10 +414,10 @@ function Trader() {
                                                         {purchase.derivativeType === Derivative.Platelets && '🟡'}
                                                     </span>
                                                     <div>
-                                                        <h3 className="text-lg font-bold text-gray-800">
+                                                        <h3 className="text-lg font-bold text-slate-900">
                                                             {getDerivativeTypeName(purchase.derivativeType)} #{purchase.tokenId}
                                                         </h3>
-                                                        <p className="text-sm text-gray-600">
+                                                        <p className="text-sm text-slate-600">
                                                             {formatDateTime(purchase.purchaseDate)}
                                                         </p>
                                                     </div>
@@ -425,7 +425,7 @@ function Trader() {
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                                     <div>
-                                                        <p className="text-sm text-gray-600 mb-1">
+                                                        <p className="text-sm text-slate-600 mb-1">
                                                             Precio Pagado:
                                                         </p>
                                                         <p className="text-xl font-bold text-success-600">
@@ -434,11 +434,11 @@ function Trader() {
                                                     </div>
 
                                                     <div>
-                                                        <p className="text-sm text-gray-600 mb-1">
+                                                        <p className="text-sm text-slate-600 mb-1">
                                                             Vendedor:
                                                         </p>
                                                         <Tooltip content={purchase.seller}>
-                                                            <code className="text-sm font-semibold text-gray-800">
+                                                            <code className="text-sm font-semibold text-slate-900">
                                                                 {truncateAddress(purchase.seller)}
                                                             </code>
                                                         </Tooltip>
@@ -446,7 +446,7 @@ function Trader() {
                                                 </div>
 
                                                 <div className="mt-4 pt-4 border-t border-gray-200">
-                                                    <p className="text-xs text-gray-500">
+                                                    <p className="text-xs text-slate-500">
                                                         TX:{' '}
                                                         <Tooltip content={purchase.transactionHash}>
                                                             <code className="text-xs">
