@@ -90,7 +90,7 @@ export function DerivateCard ({tokenId, product, timestamp, tokenIdOrigin, price
     return (
         <>
             <motion.div
-                className="max-w-lg p-6 bg-white border-2 border-gray-200 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 flex flex-col items-start gap-5 hover:scale-[1.02]"
+                className="max-w-lg p-6 bg-white border-2 border-slate-200 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 flex flex-col items-start gap-5 hover:scale-[1.02]"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -99,10 +99,10 @@ export function DerivateCard ({tokenId, product, timestamp, tokenIdOrigin, price
                     {product === Derivative.Plasma && <PlasmaIcon/>}
                     {product === Derivative.Erythrocytes && <ErythrocytesIcon/>}
                     {product === Derivative.Platelets && <PlateletsIcon/>}
-                    <h2 className="text-xl font-bold text-gray-800">{productText[product]} #{tokenId}</h2>
+                    <h2 className="text-xl font-bold text-slate-900">{productText[product]} #{tokenId}</h2>
                 </div>
 
-                <h3 className="font-normal text-gray-700">
+                <h3 className="font-normal text-slate-700">
                     <span className="font-semibold">Processing date:</span> {formatDate(timestamp)}
                 </h3>
 
@@ -148,7 +148,7 @@ export function DerivateCard ({tokenId, product, timestamp, tokenIdOrigin, price
                         <>
                             <div className="flex flex-col gap-2 flex-1">
                                 <input
-                                    className={`px-3 py-2 text-center bg-gray-50 border ${isInvalidPrice ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full`}
+                                    className={`px-3 py-2 text-center bg-gray-50 border ${isInvalidPrice ? 'border-red-500' : 'border-gray-300'} text-slate-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full`}
                                     type="number"
                                     placeholder="Price in ETH"
                                     required
