@@ -2,8 +2,6 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import "./../app/globals.css";
-import styles from "./Registro.module.css";
 import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
 import { useWallet } from "./ConnectWalletButton";
 import { useRouter } from "next/navigation";
@@ -147,112 +145,87 @@ const Register = () => {
   };
 
   return (
-    <section className={styles.section}>
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Registro de Compañía
-          </h2>
-          <p className="text-gray-600">
-            Completa el proceso de registro para unirte a la red de trazabilidad
-          </p>
+    <section className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header with gradient accent */}
+        <div className="text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blood-600 via-blood-700 to-blockchain-600 bg-clip-text text-transparent mb-4">
+              Registro de Compañía
+            </h1>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Completa el proceso de registro para unirte a la red de trazabilidad de sangre basada en blockchain
+            </p>
+          </motion.div>
         </div>
 
         {/* Step Indicator */}
         <StepIndicator currentStep={currentStep} steps={STEPS} />
 
-        {/* Step Content with Animation */}
-        <div className="relative min-h-[500px]">
-          <AnimatePresence initial={false} custom={direction} mode="wait">
-            <motion.div
-              key={currentStep}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 },
-              }}
-            >
-              {currentStep === 1 && (
-                <RoleSelection
-                  selectedRole={companyRole}
-                  onRoleSelect={setCompanyRole}
-                />
-              )}
+        {/* Main Content Card */}
+        <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-12 mb-8">
+          {/* Step Content with Animation */}
+          <div className="relative min-h-[500px]">
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              <motion.div
+                key={currentStep}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.2 },
+                }}
+              >
+                {currentStep === 1 && (
+                  <RoleSelection
+                    selectedRole={companyRole}
+                    onRoleSelect={setCompanyRole}
+                  />
+                )}
 
-              {currentStep === 2 && (
-                <CompanyInfo
-                  companyName={companyName}
-                  location={location}
-                  registerSanitario={registerSanitario}
-                  onFieldChange={handleFieldChange}
-                />
-              )}
+                {currentStep === 2 && (
+                  <CompanyInfo
+                    companyName={companyName}
+                    location={location}
+                    registerSanitario={registerSanitario}
+                    onFieldChange={handleFieldChange}
+                  />
+                )}
 
-              {currentStep === 3 && (
-                <ConfirmationStep
-                  companyRole={companyRole}
-                  companyName={companyName}
-                  location={location}
-                  registerSanitario={registerSanitario}
-                  account={account}
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-between items-center mt-8 max-w-2xl mx-auto">
-          {/* Previous Button */}
-          <Button
-            onClick={() => {
-              paginate(-1);
-              handlePrev();
-            }}
-            variant="ghost"
-            disabled={currentStep === 1 || isSubmitting}
-            className="min-w-[120px]"
-          >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Anterior
-          </Button>
-
-          {/* Step Counter */}
-          <div className="text-sm text-gray-500">
-            Paso {currentStep} de {STEPS.length}
+                {currentStep === 3 && (
+                  <ConfirmationStep
+                    companyRole={companyRole}
+                    companyName={companyName}
+                    location={location}
+                    registerSanitario={registerSanitario}
+                    account={account}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* Next/Submit Button */}
-          {currentStep < STEPS.length ? (
+          {/* Navigation Buttons */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-12 pt-8 border-t border-slate-200">
+            {/* Previous Button */}
             <Button
               onClick={() => {
-                paginate(1);
-                handleNext();
+                paginate(-1);
+                handlePrev();
               }}
-              variant="primary"
-              disabled={!canGoNext() || isSubmitting}
-              className="min-w-[120px]"
+              variant="ghost"
+              disabled={currentStep === 1 || isSubmitting}
+              className="min-w-[140px] order-2 sm:order-1"
             >
-              Siguiente
               <svg
-                className="w-5 h-5 ml-2"
+                className="w-5 h-5 mr-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -261,33 +234,70 @@ const Register = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M9 5l7 7-7 7"
+                  d="M15 19l-7-7 7-7"
                 />
               </svg>
+              Anterior
             </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              variant="success"
-              disabled={!canGoNext() || isSubmitting}
-              loading={isSubmitting}
-              className="min-w-[120px]"
-            >
-              {isSubmitting ? "Registrando..." : "Confirmar Registro"}
-            </Button>
-          )}
+
+            {/* Step Counter */}
+            <div className="text-sm font-medium text-slate-500 order-1 sm:order-2">
+              Paso <span className="text-blood-600 font-bold">{currentStep}</span> de {STEPS.length}
+            </div>
+
+            {/* Next/Submit Button */}
+            {currentStep < STEPS.length ? (
+              <Button
+                onClick={() => {
+                  paginate(1);
+                  handleNext();
+                }}
+                variant="primary"
+                disabled={!canGoNext() || isSubmitting}
+                className="min-w-[140px] order-3"
+              >
+                Siguiente
+                <svg
+                  className="w-5 h-5 ml-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                variant="success"
+                disabled={!canGoNext() || isSubmitting}
+                loading={isSubmitting}
+                className="min-w-[140px] order-3"
+              >
+                {isSubmitting ? "Registrando..." : "Confirmar Registro"}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="mt-8 max-w-2xl mx-auto">
-          <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="max-w-3xl mx-auto">
+          <div className="w-full bg-slate-200 rounded-full h-2.5 shadow-inner overflow-hidden">
             <motion.div
-              className="bg-primary-600 h-2 rounded-full"
+              className="h-full bg-gradient-to-r from-blood-600 via-blood-500 to-blockchain-600 rounded-full shadow-lg"
               initial={{ width: 0 }}
               animate={{ width: `${(currentStep / STEPS.length) * 100}%` }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
             />
           </div>
+          <p className="text-center text-xs text-slate-500 mt-2">
+            {Math.round((currentStep / STEPS.length) * 100)}% completado
+          </p>
         </div>
       </div>
     </section>
