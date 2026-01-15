@@ -92,10 +92,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
   };
 
   const arrowClasses: Record<TooltipPosition, string> = {
-    top: 'bottom-[-4px] left-1/2 -translate-x-1/2 border-t-gray-800 border-l-transparent border-r-transparent border-b-transparent',
-    bottom: 'top-[-4px] left-1/2 -translate-x-1/2 border-b-gray-800 border-l-transparent border-r-transparent border-t-transparent',
-    left: 'right-[-4px] top-1/2 -translate-y-1/2 border-l-gray-800 border-t-transparent border-b-transparent border-r-transparent',
-    right: 'left-[-4px] top-1/2 -translate-y-1/2 border-r-gray-800 border-t-transparent border-b-transparent border-l-transparent',
+    top: 'bottom-[-4px] left-1/2 -translate-x-1/2 border-t-slate-900 border-l-transparent border-r-transparent border-b-transparent',
+    bottom: 'top-[-4px] left-1/2 -translate-x-1/2 border-b-slate-900 border-l-transparent border-r-transparent border-t-transparent',
+    left: 'right-[-4px] top-1/2 -translate-y-1/2 border-l-slate-900 border-t-transparent border-b-transparent border-r-transparent',
+    right: 'left-[-4px] top-1/2 -translate-y-1/2 border-r-slate-900 border-t-transparent border-b-transparent border-l-transparent',
   };
 
   const tooltipElement = isVisible && typeof window !== 'undefined' ? (
@@ -106,7 +106,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.15 }}
         className={clsx(
-          'fixed z-[9999] px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg max-w-xs',
+          'fixed z-[9999] max-w-xs rounded-lg bg-slate-900 px-3 py-2 text-sm text-white shadow-lg',
           positionClasses[position],
           className
         )}
