@@ -197,7 +197,7 @@ export default function TracePage() {
         : donations // In production, filter by actual location data
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Hero Search Section */}
                 <SearchHero />
@@ -208,7 +208,7 @@ export default function TracePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">📊 Estadísticas del Sistema</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-4">📊 Estadísticas del Sistema</h2>
                     {isLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {[1, 2, 3, 4].map(i => (
@@ -221,11 +221,11 @@ export default function TracePage() {
                             <Card variant="elevated" hoverable>
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Total Donaciones</p>
-                                        <p className="text-3xl font-bold text-primary-600">{stats.totalDonations}</p>
-                                        <p className="text-xs text-gray-500 mt-2">🩸 Unidades de sangre</p>
+                                        <p className="text-sm font-medium text-slate-600 mb-1">Total Donaciones</p>
+                                        <p className="text-3xl font-bold text-blood-600">{stats.totalDonations}</p>
+                                        <p className="text-xs text-slate-500 mt-2">🩸 Unidades de sangre</p>
                                     </div>
-                                    <div className="w-12 h-12 bg-gradient-to-br from-red-400 to-red-600 rounded-lg flex items-center justify-center text-2xl shadow-lg">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blood-400 to-blood-600 rounded-lg flex items-center justify-center text-2xl shadow-lg">
                                         🩸
                                     </div>
                                 </div>
@@ -235,11 +235,11 @@ export default function TracePage() {
                             <Card variant="elevated" hoverable>
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Derivados Generados</p>
-                                        <p className="text-3xl font-bold text-success-600">{stats.totalDerivatives}</p>
-                                        <p className="text-xs text-gray-500 mt-2">💉 Plasma, eritrocitos, plaquetas</p>
+                                        <p className="text-sm font-medium text-slate-600 mb-1">Derivados Generados</p>
+                                        <p className="text-3xl font-bold text-medical-600">{stats.totalDerivatives}</p>
+                                        <p className="text-xs text-slate-500 mt-2">💉 Plasma, eritrocitos, plaquetas</p>
                                     </div>
-                                    <div className="w-12 h-12 bg-gradient-to-br from-success-400 to-success-600 rounded-lg flex items-center justify-center text-2xl shadow-lg">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-medical-400 to-medical-600 rounded-lg flex items-center justify-center text-2xl shadow-lg">
                                         💉
                                     </div>
                                 </div>
@@ -249,11 +249,11 @@ export default function TracePage() {
                             <Card variant="elevated" hoverable>
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Centros Registrados</p>
-                                        <p className="text-3xl font-bold text-primary-600">{stats.totalCenters}</p>
-                                        <p className="text-xs text-gray-500 mt-2">🏥 Centros de donación activos</p>
+                                        <p className="text-sm font-medium text-slate-600 mb-1">Centros Registrados</p>
+                                        <p className="text-3xl font-bold text-blockchain-600">{stats.totalCenters}</p>
+                                        <p className="text-xs text-slate-500 mt-2">🏥 Centros de donación activos</p>
                                     </div>
-                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center text-2xl shadow-lg">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blockchain-400 to-blockchain-600 rounded-lg flex items-center justify-center text-2xl shadow-lg">
                                         🏥
                                     </div>
                                 </div>
@@ -263,11 +263,11 @@ export default function TracePage() {
                             <Card variant="elevated" hoverable>
                                 <div className="flex items-start justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Transacciones Hoy</p>
-                                        <p className="text-3xl font-bold text-success-600">{stats.todayTransactions}</p>
-                                        <p className="text-xs text-gray-500 mt-2">📈 Actividad del día</p>
+                                        <p className="text-sm font-medium text-slate-600 mb-1">Transacciones Hoy</p>
+                                        <p className="text-3xl font-bold text-blockchain-600">{stats.todayTransactions}</p>
+                                        <p className="text-xs text-slate-500 mt-2">📈 Actividad del día</p>
                                     </div>
-                                    <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center text-2xl shadow-lg">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blockchain-500 to-blockchain-700 rounded-lg flex items-center justify-center text-2xl shadow-lg">
                                         📈
                                     </div>
                                 </div>
@@ -286,12 +286,12 @@ export default function TracePage() {
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
                                 <span className="text-2xl">📍</span>
-                                <label className="text-sm font-semibold text-gray-700">Buscar por región:</label>
+                                <label className="text-sm font-semibold text-slate-700">Buscar por región:</label>
                             </div>
                             <select
                                 value={selectedRegion}
                                 onChange={(e) => setSelectedRegion(e.target.value)}
-                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-500 focus:border-blood-500 bg-white"
                             >
                                 {regions.map(region => (
                                     <option key={region.value} value={region.value}>
@@ -299,7 +299,7 @@ export default function TracePage() {
                                     </option>
                                 ))}
                             </select>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-slate-600">
                                 {filteredDonations.length} resultado{filteredDonations.length !== 1 ? 's' : ''}
                             </div>
                         </div>
@@ -341,18 +341,18 @@ export default function TracePage() {
                     <Card variant="outlined">
                         <div className="text-center py-8">
                             <div className="text-4xl mb-4">🔐</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Sistema de Trazabilidad Blockchain</h3>
-                            <p className="text-gray-600 max-w-2xl mx-auto">
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">Sistema de Trazabilidad Blockchain</h3>
+                            <p className="text-slate-600 max-w-2xl mx-auto">
                                 Todas las donaciones y derivados están registrados en blockchain, garantizando
                                 transparencia total y trazabilidad inmutable del ciclo de vida de cada donación.
                             </p>
-                            <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
+                            <div className="mt-6 flex items-center justify-center gap-6 text-sm text-slate-500">
                                 <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse"></span>
+                                    <span className="w-2 h-2 bg-medical-500 rounded-full animate-pulse"></span>
                                     <span>Red: TSC Testnet</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
+                                    <span className="w-2 h-2 bg-blockchain-500 rounded-full"></span>
                                     <span>Smart Contracts Verificados</span>
                                 </div>
                             </div>
