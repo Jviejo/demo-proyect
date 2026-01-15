@@ -7,7 +7,7 @@ import Image from 'next/image';
 interface HeroSectionProps {
   title: string;
   subtitle?: string;
-  backgroundImage: string;
+  backgroundImage?: string;
   ctaText?: string;
   ctaLink?: string;
   onCtaClick?: () => void;
@@ -46,23 +46,25 @@ export default function HeroSection({
   return (
     <div className={`relative ${heightClasses[height]} overflow-hidden`}>
       {/* Background Image with Parallax */}
-      <motion.div
-        style={{ y }}
-        className="absolute inset-0 w-full h-full"
-      >
-        <Image
-          src={backgroundImage}
-          alt={title}
-          fill
-          className="object-cover"
-          priority
-          quality={90}
-        />
-      </motion.div>
+      {backgroundImage && (
+        <motion.div
+          style={{ y }}
+          className="absolute inset-0 w-full h-full"
+        >
+          <Image
+            src={backgroundImage}
+            alt={title}
+            fill
+            className="object-cover"
+            priority
+            quality={90}
+          />
+        </motion.div>
+      )}
 
       {/* Gradient Overlay */}
       <div
-        className="absolute inset-0 bg-gradient-to-br from-primary-600/80 via-primary-500/70 to-success-500/60"
+        className="absolute inset-0 bg-gradient-to-br from-blood-600/80 via-blockchain-600/70 to-medical-500/60"
         style={{ opacity: overlayOpacity }}
       />
 
@@ -96,7 +98,7 @@ export default function HeroSection({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleCtaClick}
-            className="px-8 py-3 bg-white text-primary-600 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-success-50"
+            className="px-8 py-3 bg-white text-blood-600 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-medical-50"
           >
             {ctaText}
           </motion.button>
