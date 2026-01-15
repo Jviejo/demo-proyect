@@ -224,14 +224,14 @@ function Donor() {
                     <div className="p-6">
                         <div className="flex items-center justify-between flex-wrap gap-4">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                                <h1 className="text-3xl font-bold text-slate-900 mb-2">
                                     Dashboard del Donante
                                 </h1>
-                                <div className="flex items-center gap-4 text-gray-600">
+                                <div className="flex items-center gap-4 text-slate-600">
                                     <Tooltip content={account || ''}>
                                         <span className="flex items-center gap-2">
                                             <span className="font-semibold">Dirección:</span>
-                                            <code className="px-2 py-1 bg-gray-100 rounded text-sm">
+                                            <code className="px-2 py-1 bg-slate-100 rounded text-sm">
                                                 {truncateAddress(account || '', 8, 6)}
                                             </code>
                                         </span>
@@ -286,7 +286,7 @@ function Donor() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="mb-8"
             >
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">
                     Acciones Rápidas
                 </h2>
                 <Grid cols={{ xs: 1, md: 2 }} gap="md">
@@ -327,7 +327,7 @@ function Donor() {
                 >
                     <Card variant="elevated">
                         <div className="p-6">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                            <h2 className="text-2xl font-bold text-slate-900 mb-6">
                                 Historial de Donaciones por Año
                             </h2>
                             <ResponsiveContainer width="100%" height={300}>
@@ -371,7 +371,7 @@ function Donor() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
             >
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">
                     Historial de Donaciones
                 </h2>
 
@@ -379,10 +379,10 @@ function Donor() {
                     <Card variant="elevated">
                         <div className="p-12 text-center">
                             <div className="text-6xl mb-4">🩸</div>
-                            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                            <h3 className="text-xl font-semibold text-slate-700 mb-2">
                                 No hay donaciones registradas
                             </h3>
-                            <p className="text-gray-500">
+                            <p className="text-slate-500">
                                 Todavía no has realizado ninguna donación en el sistema.
                             </p>
                         </div>
@@ -403,10 +403,10 @@ function Donor() {
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <span className="text-2xl">🩸</span>
                                                     <div>
-                                                        <h3 className="text-lg font-bold text-gray-800">
+                                                        <h3 className="text-lg font-bold text-slate-900">
                                                             Donación #{donation.tokenId}
                                                         </h3>
-                                                        <p className="text-sm text-gray-600">
+                                                        <p className="text-sm text-slate-600">
                                                             {formatDateTime(donation.donationDate)}
                                                         </p>
                                                     </div>
@@ -414,24 +414,24 @@ function Donor() {
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                                     <div>
-                                                        <p className="text-sm text-gray-600 mb-1">
+                                                        <p className="text-sm text-slate-600 mb-1">
                                                             Centro de Donación:
                                                         </p>
-                                                        <p className="font-semibold text-gray-800">
+                                                        <p className="font-semibold text-slate-900">
                                                             {donation.centerName}
                                                         </p>
                                                         <Tooltip content={donation.centerAddress}>
-                                                            <code className="text-xs text-gray-500">
+                                                            <code className="text-xs text-slate-500">
                                                                 {truncateAddress(donation.centerAddress)}
                                                             </code>
                                                         </Tooltip>
                                                     </div>
 
                                                     <div>
-                                                        <p className="text-sm text-gray-600 mb-1">
+                                                        <p className="text-sm text-slate-600 mb-1">
                                                             Ubicación:
                                                         </p>
-                                                        <p className="font-semibold text-gray-800 flex items-center gap-1">
+                                                        <p className="font-semibold text-slate-900 flex items-center gap-1">
                                                             📍 {donation.location}
                                                         </p>
                                                     </div>
@@ -440,7 +440,7 @@ function Donor() {
                                                 {/* Info de derivados */}
                                                 {donation.derivativesCount > 0 && (
                                                     <div className="mt-4 pt-4 border-t border-gray-200">
-                                                        <p className="text-sm text-gray-600 mb-2">
+                                                        <p className="text-sm text-slate-600 mb-2">
                                                             Derivados generados:
                                                         </p>
                                                         <div className="flex flex-wrap gap-2">
@@ -460,7 +460,7 @@ function Donor() {
                                                                 </Badge>
                                                             )}
                                                             {!donation.plasmaId && !donation.erythrocytesId && !donation.plateletsId && (
-                                                                <span className="text-sm text-gray-500 italic">
+                                                                <span className="text-sm text-slate-500 italic">
                                                                     Procesada (3 derivados generados)
                                                                 </span>
                                                             )}
