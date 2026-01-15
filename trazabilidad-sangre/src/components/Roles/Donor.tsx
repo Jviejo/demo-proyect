@@ -8,8 +8,11 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { Card } from "../ui/Card"
 import { Badge } from "../ui/Badge"
 import { Skeleton } from "../ui/Skeleton"
+import { Stat } from "../ui/Stat"
+import Grid from "../ui/Grid"
 import { truncateAddress, formatDate, formatDateTime, formatEther } from "@/lib/helpers"
 import { Tooltip } from "../ui/Tooltip"
+import { HeartIcon, CalendarDaysIcon, BeakerIcon } from '@heroicons/react/24/solid'
 
 interface DonationInfo {
     tokenId: number
@@ -229,87 +232,33 @@ function Donor() {
             </motion.div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                >
-                    <Card variant="elevated" className="h-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium mb-1">
-                                        Total Donaciones
-                                    </p>
-                                    <p className="text-4xl font-bold text-primary-600">
-                                        {stats.totalDonations}
-                                    </p>
-                                </div>
-                                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                                    <span className="text-3xl">🩸</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                    <Card variant="elevated" className="h-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium mb-1">
-                                        Última Donación
-                                    </p>
-                                    <p className="text-xl font-bold text-gray-800">
-                                        {stats.lastDonation
-                                            ? formatDate(stats.lastDonation)
-                                            : 'Sin donaciones'
-                                        }
-                                    </p>
-                                    {stats.lastDonation && (
-                                        <p className="text-sm text-gray-500 mt-1">
-                                            {formatDateTime(stats.lastDonation)}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center">
-                                    <span className="text-3xl">📅</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                    <Card variant="elevated" className="h-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium mb-1">
-                                        Derivados Generados
-                                    </p>
-                                    <p className="text-4xl font-bold text-success-600">
-                                        {stats.totalDerivatives}
-                                    </p>
-                                </div>
-                                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                                    <span className="text-3xl">🧪</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-            </div>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="mb-8"
+            >
+                <Grid cols={{ xs: 1, sm: 2, lg: 3 }} gap="md">
+                    <Stat
+                        icon={<HeartIcon className="h-6 w-6" />}
+                        label="Total Donaciones"
+                        value={stats.totalDonations}
+                        color="blood"
+                    />
+                    <Stat
+                        icon={<CalendarDaysIcon className="h-6 w-6" />}
+                        label="Última Donación"
+                        value={stats.lastDonation ? formatDate(stats.lastDonation) : 'Sin donaciones'}
+                        color="blockchain"
+                    />
+                    <Stat
+                        icon={<BeakerIcon className="h-6 w-6" />}
+                        label="Derivados Generados"
+                        value={stats.totalDerivatives}
+                        color="medical"
+                    />
+                </Grid>
+            </motion.div>
 
             {/* Gráfico de Donaciones por Año */}
             {chartData.length > 0 && (

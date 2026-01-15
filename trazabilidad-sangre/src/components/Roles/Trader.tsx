@@ -10,9 +10,12 @@ import { Card } from "../ui/Card"
 import { Badge } from "../ui/Badge"
 import { Button } from "../ui/Button"
 import { Skeleton } from "../ui/Skeleton"
+import { Stat } from "../ui/Stat"
+import Grid from "../ui/Grid"
 import { truncateAddress, formatDate, formatDateTime, formatEther, getDerivativeTypeName } from "@/lib/helpers"
 import { Tooltip } from "../ui/Tooltip"
 import { Derivative } from "@/lib/types"
+import { ShoppingCartIcon, CurrencyDollarIcon, ArchiveBoxIcon } from '@heroicons/react/24/solid'
 
 interface PurchaseInfo {
     tokenId: number
@@ -245,79 +248,33 @@ function Trader() {
             </motion.div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                >
-                    <Card variant="elevated" className="h-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium mb-1">
-                                        Total Compras
-                                    </p>
-                                    <p className="text-4xl font-bold text-primary-600">
-                                        {stats.totalPurchases}
-                                    </p>
-                                </div>
-                                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                                    <span className="text-3xl">🛒</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                    <Card variant="elevated" className="h-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium mb-1">
-                                        Gasto Total
-                                    </p>
-                                    <p className="text-2xl font-bold text-gray-800">
-                                        {stats.totalSpent} TAS
-                                    </p>
-                                </div>
-                                <div className="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center">
-                                    <span className="text-3xl">💰</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                    <Card variant="elevated" className="h-full">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium mb-1">
-                                        Items en Inventario
-                                    </p>
-                                    <p className="text-4xl font-bold text-success-600">
-                                        {stats.inventoryCount}
-                                    </p>
-                                </div>
-                                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                                    <span className="text-3xl">📦</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Card>
-                </motion.div>
-            </div>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="mb-8"
+            >
+                <Grid cols={{ xs: 1, sm: 2, lg: 3 }} gap="md">
+                    <Stat
+                        icon={<ShoppingCartIcon className="h-6 w-6" />}
+                        label="Total Compras"
+                        value={stats.totalPurchases}
+                        color="blockchain"
+                    />
+                    <Stat
+                        icon={<CurrencyDollarIcon className="h-6 w-6" />}
+                        label="Gasto Total"
+                        value={`${stats.totalSpent} TAS`}
+                        color="medical"
+                    />
+                    <Stat
+                        icon={<ArchiveBoxIcon className="h-6 w-6" />}
+                        label="Items en Inventario"
+                        value={stats.inventoryCount}
+                        color="blood"
+                    />
+                </Grid>
+            </motion.div>
 
             {/* Cards de Navegación */}
             <motion.div

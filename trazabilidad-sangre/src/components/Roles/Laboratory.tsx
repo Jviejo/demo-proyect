@@ -8,7 +8,10 @@ import { BloodCard } from "../LabComponents/BloodCard"
 import { motion } from "framer-motion"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts"
 import { Skeleton } from "../ui/Skeleton"
+import { Stat } from "../ui/Stat"
+import Grid from "../ui/Grid"
 import { truncateAddress } from "@/lib/helpers"
+import { BeakerIcon, CubeIcon, ShoppingBagIcon } from '@heroicons/react/24/solid'
 
 export default function Laboratory() {
     const { web3, account, contractTracker, contractDonation, contractDerivative } = useWallet()
@@ -124,52 +127,32 @@ export default function Laboratory() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <motion.div
-                        className="bg-white rounded-xl shadow-card p-6 border-l-4 border-primary-500"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Blood Units</p>
-                                <p className="text-3xl font-bold text-gray-900 mt-2">{donationTokens.length}</p>
-                            </div>
-                            <div className="text-5xl">🩸</div>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        className="bg-white rounded-xl shadow-card p-6 border-l-4 border-success-500"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Derivatives</p>
-                                <p className="text-3xl font-bold text-gray-900 mt-2">{derivativeTokens.length}</p>
-                            </div>
-                            <div className="text-5xl">🧪</div>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        className="bg-white rounded-xl shadow-card p-6 border-l-4 border-yellow-500"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Items on Sale</p>
-                                <p className="text-3xl font-bold text-gray-900 mt-2">{listedDerivatives.length}</p>
-                            </div>
-                            <div className="text-5xl">💰</div>
-                        </div>
-                    </motion.div>
-                </div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                    <Grid cols={{ xs: 1, sm: 2, lg: 3 }} gap="md">
+                        <Stat
+                            icon={<BeakerIcon className="h-6 w-6" />}
+                            label="Blood Units"
+                            value={donationTokens.length}
+                            color="blood"
+                        />
+                        <Stat
+                            icon={<CubeIcon className="h-6 w-6" />}
+                            label="Derivatives"
+                            value={derivativeTokens.length}
+                            color="medical"
+                        />
+                        <Stat
+                            icon={<ShoppingBagIcon className="h-6 w-6" />}
+                            label="Items on Sale"
+                            value={listedDerivatives.length}
+                            color="blockchain"
+                        />
+                    </Grid>
+                </motion.div>
             </div>
 
             {/* Gráficos */}
