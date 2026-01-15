@@ -89,9 +89,7 @@ const WalletInfo: React.FC<WalletInfoProps> = ({ variant = "full" }) => {
             {truncateAddress(account, 4)}
           </span>
         </Tooltip>
-        <Badge variant={getRoleBadgeVariant(role)} size="sm">
-          {getRoleName(role)}
-        </Badge>
+        <Badge status={getRoleBadgeVariant(role)} text={getRoleName(role)} variant="soft" />
       </motion.div>
     );
   }
@@ -111,9 +109,7 @@ const WalletInfo: React.FC<WalletInfoProps> = ({ variant = "full" }) => {
             </span>
           </Tooltip>
         </div>
-        <Badge variant={getRoleBadgeVariant(role)}>
-          {getRoleName(role)}
-        </Badge>
+        <Badge status={getRoleBadgeVariant(role)} text={getRoleName(role)} variant="soft" />
       </div>
 
       <div className="flex items-center justify-between gap-4 pt-2 border-t border-blood-100">
