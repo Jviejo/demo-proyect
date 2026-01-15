@@ -24,7 +24,7 @@ export function LatestDonations({ donations, maxItems = 10 }: LatestDonationsPro
         return (
             <div className="bg-white rounded-xl shadow-md p-8 text-center">
                 <div className="text-6xl mb-4">📭</div>
-                <p className="text-gray-600">No hay donaciones registradas aún</p>
+                <p className="text-slate-600">No hay donaciones registradas aún</p>
             </div>
         )
     }
@@ -33,15 +33,15 @@ export function LatestDonations({ donations, maxItems = 10 }: LatestDonationsPro
         <div className="bg-white rounded-xl shadow-md p-6">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center text-white text-xl shadow">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blood-500 to-blood-600 rounded-lg flex items-center justify-center text-white text-xl shadow">
                         🩸
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold text-gray-900">Últimas Donaciones</h3>
-                        <p className="text-sm text-gray-600">Actividad reciente en el sistema</p>
+                        <h3 className="text-xl font-bold text-slate-900">Últimas Donaciones</h3>
+                        <p className="text-sm text-slate-600">Actividad reciente en el sistema</p>
                     </div>
                 </div>
-                <div className="bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="bg-blood-100 text-blood-700 px-3 py-1 rounded-full text-sm font-semibold">
                     {displayDonations.length} registros
                 </div>
             </div>
@@ -49,7 +49,7 @@ export function LatestDonations({ donations, maxItems = 10 }: LatestDonationsPro
             {/* Timeline */}
             <div className="relative">
                 {/* Vertical line */}
-                <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary-200 via-success-200 to-primary-200" />
+                <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blood-200 via-blockchain-200 to-blood-200" />
 
                 {/* Items */}
                 <div className="space-y-6">
@@ -63,37 +63,37 @@ export function LatestDonations({ donations, maxItems = 10 }: LatestDonationsPro
                         >
                             {/* Timeline node */}
                             <div className="absolute left-5 top-2 -translate-x-1/2">
-                                <div className="w-3 h-3 bg-primary-500 rounded-full border-2 border-white shadow-md" />
+                                <div className="w-3 h-3 bg-blood-500 rounded-full border-2 border-white shadow-md" />
                             </div>
 
                             {/* Card */}
                             <Link href={`/trace/${donation.id}`}>
-                                <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 hover:shadow-md transition-all cursor-pointer border border-gray-200 group">
+                                <div className="bg-slate-50 rounded-lg p-4 hover:bg-slate-100 hover:shadow-md transition-all cursor-pointer border border-slate-200 group">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <span className="text-lg font-bold text-primary-600 group-hover:text-primary-700">
+                                                <span className="text-lg font-bold text-blood-600 group-hover:text-blood-700">
                                                     Donación #{donation.id}
                                                 </span>
-                                                <span className="text-xs text-gray-500">
+                                                <span className="text-xs text-slate-500">
                                                     {formatRelativeTime(new Date(donation.timestamp * 1000))}
                                                 </span>
                                             </div>
-                                            <div className="space-y-1 text-sm text-gray-600">
+                                            <div className="space-y-1 text-sm text-slate-600">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-gray-500">👤 Donante:</span>
+                                                    <span className="text-slate-500">👤 Donante:</span>
                                                     <code className="bg-white px-2 py-0.5 rounded text-xs font-mono">
                                                         {truncateAddress(donation.donor)}
                                                     </code>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-gray-500">🏥 Centro:</span>
+                                                    <span className="text-slate-500">🏥 Centro:</span>
                                                     <code className="bg-white px-2 py-0.5 rounded text-xs font-mono">
                                                         {truncateAddress(donation.center)}
                                                     </code>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-gray-500">📦 Bloque:</span>
+                                                    <span className="text-slate-500">📦 Bloque:</span>
                                                     <span className="text-xs">#{donation.blockNumber}</span>
                                                 </div>
                                             </div>
@@ -114,7 +114,7 @@ export function LatestDonations({ donations, maxItems = 10 }: LatestDonationsPro
                 <div className="mt-6 text-center">
                     <Link
                         href="/trace"
-                        className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold text-sm"
+                        className="inline-flex items-center gap-2 text-blood-600 hover:text-blood-700 font-semibold text-sm"
                     >
                         <span>Ver todas las donaciones</span>
                         <span>→</span>
