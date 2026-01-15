@@ -26,7 +26,7 @@ export function SearchHero({
     }
 
     return (
-        <div className="relative overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl shadow-2xl">
+        <div className="relative overflow-hidden bg-gradient-to-br from-blood-600 to-blockchain-700 rounded-2xl shadow-2xl">
             {/* Background image overlay */}
             <div
                 className="absolute inset-0 opacity-10 bg-cover bg-center"
@@ -34,7 +34,7 @@ export function SearchHero({
             />
 
             {/* Animated gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/50 via-transparent to-success-500/30" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blood-500/50 via-transparent to-blockchain-500/30" />
 
             {/* Content */}
             <div className="relative z-10 px-6 py-16 md:px-12 md:py-24">
@@ -80,12 +80,12 @@ export function SearchHero({
                                 value={searchId}
                                 onChange={(e) => setSearchId(e.target.value)}
                                 placeholder="Ingresa el ID de donación (ej: 1, 2, 3...)"
-                                className="flex-1 px-6 py-4 rounded-xl bg-white/95 backdrop-blur-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-success-400 transition shadow-lg"
+                                className="flex-1 px-6 py-4 rounded-xl bg-white/95 backdrop-blur-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-medical-400 transition shadow-lg"
                             />
                             <button
                                 type="submit"
                                 disabled={!searchId.trim()}
-                                className="px-8 py-4 bg-success-500 text-white font-semibold rounded-xl hover:bg-success-600 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg hover:shadow-xl disabled:hover:shadow-lg flex items-center justify-center gap-2"
+                                className="px-8 py-4 bg-medical-500 text-white font-semibold rounded-xl hover:bg-medical-600 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg hover:shadow-xl disabled:hover:shadow-lg flex items-center justify-center gap-2"
                             >
                                 <span>🔍</span>
                                 <span>Buscar</span>
@@ -106,8 +106,8 @@ export function SearchHero({
             </div>
 
             {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-success-400 rounded-full blur-3xl opacity-20 -mr-32 -mt-32" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-400 rounded-full blur-3xl opacity-20 -ml-48 -mb-48" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blockchain-400 rounded-full blur-3xl opacity-20 -mr-32 -mt-32" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-blood-400 rounded-full blur-3xl opacity-20 -ml-48 -mb-48" />
         </div>
     )
 }
