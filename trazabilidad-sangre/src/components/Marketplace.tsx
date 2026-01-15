@@ -11,8 +11,12 @@ import { Button } from './ui/Button';
 import { ProductCard } from './marketplace/ProductCard';
 import { ProductDetailModal } from './marketplace/ProductDetailModal';
 import { PriceFilter } from './marketplace/PriceFilter';
+import { FilterPanel } from './marketplace/FilterPanel';
 import { Skeleton } from './ui/Skeleton';
 import Grid from './ui/Grid';
+import { Dialog, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { showTransactionSuccess, showTransactionError, showTransactionPending } from '@/lib/toast';
 import { formatEther } from '@/lib/helpers';
 
@@ -230,68 +234,61 @@ function Marketplace() {
 
   return (
     <AppContainer>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-4xl font-bold text-slate-900 mb-2">
               HeroChain Marketplace
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-slate-600">
               Compra y vende derivados sanguíneos de forma segura en blockchain
             </p>
           </div>
 
-          {/* Filtros de tipo */}
-          <div className="flex flex-wrap gap-3 mb-6">
-            {marketPlaceTypes.map((type) => (
-              <Button
-                key={type.id}
-                variant={filterType === type.id ? 'primary' : 'ghost'}
-                size="md"
-                onClick={() => setFilterType(type.id)}
-              >
-                {type.label}
-              </Button>
-            ))}
+          {/* Layout con sidebar en desktop */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Sidebar de filtros - Solo desktop */}
+            <aside className="hidden lg:block w-80 flex-shrink-0">
+              <div className="bg-white rounded-xl shadow-card p-6 sticky top-8">
+                <FilterPanel
+                  filterType={filterType}
+                  setFilterType={setFilterType}
+                  priceRange={priceRange}
+                  setPriceRange={setPriceRange}
+                  marketPlaceTypes={marketPlaceTypes}
+                />
+              </div>
+            </aside>
 
-            {/* Toggle filtros avanzados */}
-            <Button
-              variant="ghost"
-              size="md"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <FaFilter className="mr-2" />
-              {showFilters ? 'Ocultar Filtros' : 'Más Filtros'}
-            </Button>
-          </div>
+            {/* Contenido principal */}
+            <div className="flex-1">
+              {/* Botón de filtros móvil */}
+              <div className="lg:hidden mb-6">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => setShowFilters(true)}
+                  className="w-full"
+                >
+                  <FaFilter className="mr-2" />
+                  Mostrar Filtros
+                </Button>
+              </div>
 
-          {/* Filtro de precio */}
-          {showFilters && (
-            <div className="mb-6">
-              <PriceFilter
-                minPrice={0}
-                maxPrice={10}
-                defaultMin={priceRange.min}
-                defaultMax={priceRange.max}
-                onChange={(min, max) => setPriceRange({ min, max })}
-              />
-            </div>
-          )}
-
-          {/* Resultados */}
-          <div className="mb-4 flex justify-between items-center">
-            <p className="text-gray-600">
-              {isLoading ? (
-                'Cargando productos...'
-              ) : (
-                <>
-                  {filteredTokens.length} producto{filteredTokens.length !== 1 ? 's' : ''}{' '}
-                  encontrado{filteredTokens.length !== 1 ? 's' : ''}
-                </>
-              )}
-            </p>
-          </div>
+              {/* Resultados */}
+              <div className="mb-4 flex justify-between items-center">
+                <p className="text-slate-600">
+                  {isLoading ? (
+                    'Cargando productos...'
+                  ) : (
+                    <>
+                      {filteredTokens.length} producto{filteredTokens.length !== 1 ? 's' : ''}{' '}
+                      encontrado{filteredTokens.length !== 1 ? 's' : ''}
+                    </>
+                  )}
+                </p>
+              </div>
 
           {/* Grid de productos */}
           {isLoading ? (
@@ -369,8 +366,79 @@ function Marketplace() {
               ))}
             </Grid>
           )}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Modal de filtros móvil */}
+      <Transition appear show={showFilters} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50 lg:hidden"
+          onClose={() => setShowFilters(false)}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-end justify-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 translate-y-full"
+                enterTo="opacity-100 translate-y-0"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 translate-y-0"
+                leaveTo="opacity-0 translate-y-full"
+              >
+                <Dialog.Panel className="w-full max-h-[85vh] overflow-y-auto bg-white rounded-t-2xl shadow-xl transition-all">
+                  <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10">
+                    <Dialog.Title className="text-lg font-semibold text-slate-900">
+                      Filtros
+                    </Dialog.Title>
+                    <button
+                      type="button"
+                      className="text-slate-400 hover:text-slate-600 transition-colors"
+                      onClick={() => setShowFilters(false)}
+                    >
+                      <XMarkIcon className="h-6 w-6" />
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    <FilterPanel
+                      filterType={filterType}
+                      setFilterType={setFilterType}
+                      priceRange={priceRange}
+                      setPriceRange={setPriceRange}
+                      marketPlaceTypes={marketPlaceTypes}
+                    />
+                    <div className="mt-6">
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        onClick={() => setShowFilters(false)}
+                        className="w-full"
+                      >
+                        Aplicar Filtros
+                      </Button>
+                    </div>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
 
       {/* Modal de detalles */}
       <ProductDetailModal
