@@ -52,31 +52,31 @@ export function BloodCard ({tokenId, donationCenterAddress, donationCenterName, 
     return (
         <>
             <motion.div
-                className="max-w-lg p-6 bg-white border-2 border-gray-200 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 flex flex-col items-start gap-5 hover:scale-[1.02]"
+                className="max-w-lg p-6 bg-white border-2 border-slate-200 rounded-xl shadow-card hover:shadow-card-hover transition-all duration-300 flex flex-col items-start gap-5 hover:scale-[1.02]"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
             >
                 <div className="flex flex-row items-center gap-3">
                     <DonationIcon />
-                    <h2 className="text-xl font-bold text-gray-800">Donation #{tokenId}</h2>
+                    <h2 className="text-xl font-bold text-slate-900">Donation #{tokenId}</h2>
                 </div>
 
-                <h3 className="font-normal text-gray-700">
+                <h3 className="font-normal text-slate-700">
                     <span className="font-semibold">Extraction date:</span> {formatDate(donationDate)}
                 </h3>
 
                 <div className="font-normal text-start w-full">
-                    <h3 className="text-gray-800 font-semibold mb-2">Donation Center: {donationCenterName}</h3>
-                    <div className="font-normal flex flex-col items-start text-gray-600 space-y-1">
+                    <h3 className="text-slate-900 font-semibold mb-2">Donation Center: {donationCenterName}</h3>
+                    <div className="font-normal flex flex-col items-start text-slate-600 space-y-1">
                         <p>📍 Location: {donationCenterLocation}</p>
                         <Tooltip content={donationCenterAddress}>
-                            <p>Address: <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">{truncateAddress(donationCenterAddress)}</span></p>
+                            <p>Address: <span className="text-xs font-mono bg-slate-100 px-2 py-1 rounded">{truncateAddress(donationCenterAddress)}</span></p>
                         </Tooltip>
                     </div>
                 </div>
 
-                <Link href={`/trace/${tokenId}`} className="inline-flex font-medium items-center text-primary-600 hover:text-primary-700 hover:underline transition-colors">
+                <Link href={`/trace/${tokenId}`} className="inline-flex font-medium items-center text-blood-600 hover:text-blood-700 hover:underline transition-colors">
                     View full traceability
                     <svg className="w-3 h-3 ms-2.5 rtl:rotate-[270deg]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"/>
@@ -84,7 +84,7 @@ export function BloodCard ({tokenId, donationCenterAddress, donationCenterName, 
                 </Link>
 
                 <motion.button
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blood-600 rounded-lg hover:bg-blood-700 focus:ring-4 focus:outline-none focus:ring-blood-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     onClick={() => setShowModal(true)}
                     disabled={isProcessing}
                     whileHover={{ scale: 1.05 }}
