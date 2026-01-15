@@ -134,14 +134,14 @@ export default function Laboratory() {
     ]
 
     return (
-        <div className="flex flex-col flex-1 w-full h-full p-6 gap-6 bg-gray-50">
+        <div className="flex flex-col flex-1 w-full h-full p-6 gap-6 bg-slate-50">
             {/* Header con título y stats */}
             <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Laboratory Dashboard</h1>
-                        <p className="text-sm text-gray-600 mt-1">
-                            Address: <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{truncateAddress(account || '')}</span>
+                        <h1 className="text-3xl font-bold text-slate-900">Laboratory Dashboard</h1>
+                        <p className="text-sm text-slate-600 mt-1">
+                            Address: <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">{truncateAddress(account || '')}</span>
                         </p>
                     </div>
                 </div>
@@ -181,7 +181,7 @@ export default function Laboratory() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="mb-8"
                 >
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                    <h2 className="text-2xl font-bold text-slate-900 mb-6">
                         Acciones Rápidas
                     </h2>
                     <Grid cols={{ xs: 1, md: 2 }} gap="md">
@@ -223,7 +223,7 @@ export default function Laboratory() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4 }}
                     >
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Derivative Distribution</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-4">Derivative Distribution</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
@@ -253,7 +253,7 @@ export default function Laboratory() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.5 }}
                     >
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Processing History (Last 7 Days)</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-4">Processing History (Last 7 Days)</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={processingHistory}>
                                 <CartesianGrid strokeDasharray="3 3" />
@@ -271,7 +271,7 @@ export default function Laboratory() {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 {/* Stock of blood units */}
                 <section className="bg-white rounded-xl shadow-card p-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-3">Stock of Blood Units</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-4 border-b pb-3">Stock of Blood Units</h2>
                     <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto">
                         {isLoading ? (
                             <>
@@ -291,7 +291,7 @@ export default function Laboratory() {
                                 />
                             ))
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-slate-500">
                                 <div className="text-6xl mb-4">🩸</div>
                                 <p className="font-medium">No blood units in stock</p>
                             </div>
@@ -301,7 +301,7 @@ export default function Laboratory() {
 
                 {/* Stock of derivatives */}
                 <section className="bg-white rounded-xl shadow-card p-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-3">Stock of Derivatives</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-4 border-b pb-3">Stock of Derivatives</h2>
                     <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto">
                         {isLoading ? (
                             <>
@@ -320,7 +320,7 @@ export default function Laboratory() {
                                 />
                             ))
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-slate-500">
                                 <div className="text-6xl mb-4">🧪</div>
                                 <p className="font-medium">No derivatives in stock</p>
                             </div>
@@ -330,7 +330,7 @@ export default function Laboratory() {
 
                 {/* Derivatives for sale */}
                 <section className="bg-white rounded-xl shadow-card p-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4 border-b pb-3">Derivatives for Sale</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-4 border-b pb-3">Derivatives for Sale</h2>
                     <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto">
                         {isLoading ? (
                             <>
@@ -350,7 +350,7 @@ export default function Laboratory() {
                                 />
                             ))
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-slate-500">
                                 <div className="text-6xl mb-4">💰</div>
                                 <p className="font-medium">No items listed for sale</p>
                             </div>
