@@ -12,6 +12,7 @@ import { ProductCard } from './marketplace/ProductCard';
 import { ProductDetailModal } from './marketplace/ProductDetailModal';
 import { PriceFilter } from './marketplace/PriceFilter';
 import { Skeleton } from './ui/Skeleton';
+import Grid from './ui/Grid';
 import { showTransactionSuccess, showTransactionError, showTransactionPending } from '@/lib/toast';
 import { formatEther } from '@/lib/helpers';
 
@@ -294,11 +295,11 @@ function Marketplace() {
 
           {/* Grid de productos */}
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <Grid cols={{ xs: 1, md: 2, lg: 3, xl: 4 }} gap="md">
               {[...Array(8)].map((_, i) => (
                 <Skeleton key={i} variant="card" />
               ))}
-            </div>
+            </Grid>
           ) : filteredTokens.length === 0 ? (
             /* Empty state */
             <div className="text-center py-16">
@@ -333,7 +334,7 @@ function Marketplace() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <Grid cols={{ xs: 1, md: 2, lg: 3, xl: 4 }} gap="md">
               {/* Card para agregar item */}
               <Link href="/marketplace/derivative/listItem" className="block">
                 <div className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden cursor-pointer h-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 hover:border-primary-500">
@@ -366,7 +367,7 @@ function Marketplace() {
                   isSeller={isSeller(token.seller)}
                 />
               ))}
-            </div>
+            </Grid>
           )}
         </div>
       </div>
