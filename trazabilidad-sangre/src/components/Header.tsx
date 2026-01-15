@@ -21,8 +21,8 @@ const roles = [
   { name: "Trader", path: "/role-traders" },
 ];
 
-const getRoleName = (roleNum: Number | null): string => {
-  if (roleNum === null) return "No registrado";
+const getRoleName = (roleNum: number | null | undefined): string => {
+  if (roleNum === null || roleNum === undefined) return "No registrado";
   switch (roleNum) {
     case 1:
       return "Collector Center";
@@ -35,8 +35,8 @@ const getRoleName = (roleNum: Number | null): string => {
   }
 };
 
-const getRoleBadgeVariant = (roleNum: Number | null): "pending" | "processing" | "completed" | "cancelled" => {
-  if (roleNum === null) return "cancelled";
+const getRoleBadgeVariant = (roleNum: number | null | undefined): "pending" | "processing" | "completed" | "cancelled" => {
+  if (roleNum === null || roleNum === undefined) return "cancelled";
   switch (roleNum) {
     case 1:
       return "processing"; // Blue for Collector Center

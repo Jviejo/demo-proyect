@@ -22,8 +22,8 @@ type WalletContextType = {
   setIsGetWalletModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
   dropdownOpen: boolean | null;
   setDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>,
-  role: Number,
-  setRole: React.Dispatch<React.SetStateAction<Number | null>>,
+  role: number | null,
+  setRole: React.Dispatch<React.SetStateAction<number | null>>,
   getRole: () => Promise<void>,
   web3: Web3 | null;
   setWeb3: React.Dispatch<React.SetStateAction<Web3 | null>>,
@@ -57,7 +57,7 @@ export const useWallet = () => {
 export const Wallet: React.FC<WalletProviderProps> = ({ children }) => {
   const [account, setAccount] = useState("");
   const [network, setNetwork] = useState("");
-  const [role, setRole] = useState<Number | null>(null);
+  const [role, setRole] = useState<number | null>(null);
   const [installed, setInstalled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isGetWalletModalOpen, setIsGetWalletModalOpen] =
