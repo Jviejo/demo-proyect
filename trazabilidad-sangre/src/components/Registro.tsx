@@ -192,6 +192,7 @@ const Register = () => {
 
                 {currentStep === 2 && (
                   <CompanyInfo
+                    companyRole={companyRole}
                     companyName={companyName}
                     location={location}
                     registerSanitario={registerSanitario}
