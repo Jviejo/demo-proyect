@@ -131,7 +131,7 @@ const Header = () => {
 
   return (
     <>
-      <div className="header">
+      <header className="header" role="banner">
         <AppContainer>
           <div className="nav-container">
             <div className="logo-container">
@@ -139,7 +139,7 @@ const Header = () => {
                 <Logo />
               </Link>
             </div>
-            <div className="nav-links">
+            <nav className="nav-links" role="navigation" aria-label="Main navigation">
               {/* About Dropdown */}
               <div
                 className="nav-item dropdown"
@@ -304,10 +304,10 @@ const Header = () => {
               )}
 
               <ConnectWalletButton />
-            </div>
+            </nav>
           </div>
         </AppContainer>
-      </div>
+      </header>
 
       {/* Breadcrumbs */}
       {pathname !== "/" && breadcrumbs.length > 1 && (

@@ -8,12 +8,27 @@ import { Address, DonationEventLog, EventTrace, EventType, TransferEventLog } fr
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-const web3 = new Web3(window?.ethereum)
-// const web3 = new Web3("https://testnet.tscscan.io/testrpc")
+// Initialize Web3 and contracts only on client side
+const getWeb3Instance = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  return new Web3(window.ethereum || "https://testnet.tscscan.io/testrpc");
+};
 
-const contractTracker = new web3.eth.Contract(abiTracker, process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS)
-const contractDonation = new web3.eth.Contract(abiDonation, process.env.NEXT_PUBLIC_BLD_DONATION_CONTRACT_ADDRESS)
-const contractDerivative = new web3.eth.Contract(abiDerivative, process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS)
+const getContracts = () => {
+  const web3 = getWeb3Instance();
+  if (!web3) {
+    return { web3: null, contractTracker: null, contractDonation: null, contractDerivative: null };
+  }
+
+  return {
+    web3,
+    contractTracker: new web3.eth.Contract(abiTracker, process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS),
+    contractDonation: new web3.eth.Contract(abiDonation, process.env.NEXT_PUBLIC_BLD_DONATION_CONTRACT_ADDRESS),
+    contractDerivative: new web3.eth.Contract(abiDerivative, process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS)
+  };
+};
 
 /**
  * Recupera el listado de las donaciones realizadas por un donante
@@ -21,6 +36,9 @@ const contractDerivative = new web3.eth.Contract(abiDerivative, process.env.NEXT
  * @returns Registro de donaciones realizadas por el donante
  */
 export async function getDonations(address: string) {
+    const { web3, contractTracker } = getContracts();
+    if (!web3 || !contractTracker) return [];
+
     const donations = []
     const events = await contractTracker.getPastEvents('Donation', {
         filter: { donor: address },
@@ -51,6 +69,9 @@ export async function getDonations(address: string) {
  * @returns Registro de extracciones realizadas por el centro
  */
 export async function getExtractions(address: string) {
+    const { web3, contractTracker } = getContracts();
+    if (!web3 || !contractTracker) return [];
+
     const donations = []
     const events = await contractTracker.getPastEvents('Donation', {
         filter: { center: address },
@@ -77,6 +98,9 @@ export async function getExtractions(address: string) {
  * @returns Registro de procesamientos realizados por el laboratorio
  */
 export async function getProcesses(address: string) {
+    const { contractDonation } = getContracts();
+    if (!contractDonation) return [];
+
     return await contractDonation.getPastEvents('Transfer', {
         filter: { from: address, to: ZERO_ADDRESS },
         fromBlock: process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK,
@@ -90,6 +114,9 @@ export async function getProcesses(address: string) {
  * @returns Traza completa del evento Transfer
  */
 export async function getEventsFromDonation(tokenId: number) {
+    const { contractDonation } = getContracts();
+    if (!contractDonation) return [];
+
     const events = await contractDonation.getPastEvents('Transfer', {
         filter: { tokenId: tokenId },
         fromBlock: process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK,
@@ -105,6 +132,9 @@ export async function getEventsFromDonation(tokenId: number) {
  * @returns Traza completa del evento Transfer
  */
 export async function getEventsFromDerivative(tokenId: number, fromBlock: number = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK)) {
+    const { contractDerivative } = getContracts();
+    if (!contractDerivative) return [];
+
     const events = await contractDerivative.getPastEvents('Transfer', {
         filter: { tokenId: tokenId },
         fromBlock: fromBlock,
@@ -119,9 +149,12 @@ export async function getEventsFromDerivative(tokenId: number, fromBlock: number
  * @param tokenId Id de la donación original
  */
 export async function getTraceFromDonation(tokenId: number) {
+    const { contractDonation } = getContracts();
+    if (!contractDonation) return { donationTrace: undefined };
+
     const donationTrace = await getEventsFromDonation(tokenId)
 
-    // Si no encuentra eventos entonces es que la donación no existe 
+    // Si no encuentra eventos entonces es que la donación no existe
     if (!donationTrace.length) return { donationTrace: undefined }
 
     const donation = {
@@ -162,12 +195,18 @@ export async function getTraceFromDonation(tokenId: number) {
 }
 
 export async function getTokenIdOriginFromDerivative(tokenId: number) {
+    const { contractDerivative } = getContracts();
+    if (!contractDerivative) return undefined;
+
     const { tokenIdOrigin } = await contractDerivative.methods.products(tokenId).call()
     if (!tokenIdOrigin) return
     return await getTraceFromDonation(tokenIdOrigin as number)
 }
 
 async function formatEvent(events: TransferEventLog[]): Promise<EventTrace[]> {
+    const { web3, contractTracker } = getContracts();
+    if (!web3 || !contractTracker) return [];
+
     return await Promise.all(events.map(async e => {
         let event, owner: Address
         if (e.returnValues.from === ZERO_ADDRESS) {
