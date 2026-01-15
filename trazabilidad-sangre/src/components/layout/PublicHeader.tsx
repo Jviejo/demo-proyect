@@ -22,7 +22,7 @@ const PublicHeader: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm">
       <AppContainer>
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
@@ -43,7 +43,7 @@ const PublicHeader: React.FC = () => {
                       "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                       isActive
                         ? "text-blood-600 bg-blood-50"
-                        : "text-gray-700 hover:text-blood-600 hover:bg-gray-50"
+                        : "text-slate-700 hover:text-blood-600 hover:bg-slate-50"
                     )}
                   >
                     {item.name}
@@ -69,7 +69,7 @@ const PublicHeader: React.FC = () => {
             {/* Mobile menu button */}
             <button
               type="button"
-              className="lg:hidden -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 hover:bg-gray-100 transition-colors"
+              className="lg:hidden -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-slate-700 hover:bg-slate-100 transition-colors"
               onClick={() => setMobileMenuOpen(true)}
             >
               <span className="sr-only">Abrir menú</span>

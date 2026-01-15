@@ -300,9 +300,9 @@ function Marketplace() {
           ) : filteredTokens.length === 0 ? (
             /* Empty state */
             <div className="text-center py-16">
-              <div className="inline-block p-8 bg-gray-100 rounded-full mb-6">
+              <div className="inline-block p-8 bg-slate-100 rounded-full mb-6">
                 <svg
-                  className="w-24 h-24 text-gray-400"
+                  className="w-24 h-24 text-slate-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -315,10 +315,10 @@ function Marketplace() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-semibold text-gray-700 mb-2">
+              <h3 className="text-2xl font-semibold text-slate-700 mb-2">
                 No hay productos disponibles
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-slate-500 mb-6">
                 {filterType === 0
                   ? 'Aún no hay productos en venta en el marketplace'
                   : 'No se encontraron productos con los filtros seleccionados'}
@@ -334,14 +334,14 @@ function Marketplace() {
             <Grid cols={{ xs: 1, md: 2, lg: 3, xl: 4 }} gap="md">
               {/* Card para agregar item */}
               <Link href="/marketplace/derivative/listItem" className="block">
-                <div className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden cursor-pointer h-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 hover:border-primary-500">
+                <div className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden cursor-pointer h-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 hover:border-primary-500">
                   <div className="bg-primary-50 rounded-full p-6 mb-4">
                     <FaPlus className="text-4xl text-primary-600" />
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-700 mb-2">
+                  <h4 className="text-lg font-semibold text-slate-700 mb-2">
                     Agregar Producto
                   </h4>
-                  <p className="text-sm text-gray-500 text-center">
+                  <p className="text-sm text-slate-500 text-center">
                     Lista tus derivados en el marketplace
                   </p>
                 </div>
