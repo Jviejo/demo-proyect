@@ -2,6 +2,7 @@
 
 import { useWallet } from "../ConnectWalletButton"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { getTraceFromDonation } from "@/lib/events"
 import { motion } from "framer-motion"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts"
@@ -13,6 +14,23 @@ import Grid from "../ui/Grid"
 import { truncateAddress, formatDate, formatDateTime, formatEther } from "@/lib/helpers"
 import { Tooltip } from "../ui/Tooltip"
 import { HeartIcon, CalendarDaysIcon, BeakerIcon } from '@heroicons/react/24/solid'
+
+const navigationCards = [
+    {
+        name: "Trazabilidad",
+        description: "Rastrear mis donaciones",
+        icon: "🔍",
+        path: "/trace",
+        gradient: "from-blood-500 to-blood-700"
+    },
+    {
+        name: "Marketplace",
+        description: "Ver derivados disponibles",
+        icon: "🛒",
+        path: "/marketplace",
+        gradient: "from-blockchain-500 to-blockchain-700"
+    }
+]
 
 interface DonationInfo {
     tokenId: number
@@ -28,6 +46,7 @@ interface DonationInfo {
 
 function Donor() {
     const { account, web3, contractDonation } = useWallet()
+    const router = useRouter()
     const [balance, setBalance] = useState<string>("0")
     const [donations, setDonations] = useState<DonationInfo[]>([])
     const [isLoading, setIsLoading] = useState(true)
@@ -257,6 +276,44 @@ function Donor() {
                         value={stats.totalDerivatives}
                         color="medical"
                     />
+                </Grid>
+            </motion.div>
+
+            {/* Acciones Rápidas */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="mb-8"
+            >
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                    Acciones Rápidas
+                </h2>
+                <Grid cols={{ xs: 1, md: 2 }} gap="md">
+                    {navigationCards.map((card, index) => (
+                        <motion.div
+                            key={card.name}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3, delay: 0.1 * index }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <Card
+                                variant="elevated"
+                                className="h-full cursor-pointer hover:shadow-2xl transition-all"
+                                onClick={() => router.push(card.path)}
+                            >
+                                <div className={`p-6 bg-gradient-to-br ${card.gradient} text-white`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-5xl">{card.icon}</span>
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2">{card.name}</h3>
+                                    <p className="text-white/90 text-sm">{card.description}</p>
+                                </div>
+                            </Card>
+                        </motion.div>
+                    ))}
                 </Grid>
             </motion.div>
 

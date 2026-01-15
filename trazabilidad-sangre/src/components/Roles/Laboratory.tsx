@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { useWallet } from "../ConnectWalletButton"
 import { getEventsFromDerivative, getTraceFromDonation } from "@/lib/events"
 import { DerivateCard } from "../LabComponents/DerivateCard"
@@ -10,11 +11,30 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTo
 import { Skeleton } from "../ui/Skeleton"
 import { Stat } from "../ui/Stat"
 import Grid from "../ui/Grid"
+import { Card } from "../ui/Card"
 import { truncateAddress } from "@/lib/helpers"
 import { BeakerIcon, CubeIcon, ShoppingBagIcon } from '@heroicons/react/24/solid'
 
+const navigationCards = [
+    {
+        name: "Marketplace",
+        description: "Comprar/Vender derivados",
+        icon: "🛒",
+        path: "/marketplace",
+        gradient: "from-blockchain-500 to-blockchain-700"
+    },
+    {
+        name: "Trazabilidad",
+        description: "Rastrear productos",
+        icon: "🔍",
+        path: "/trace",
+        gradient: "from-medical-500 to-medical-700"
+    }
+]
+
 export default function Laboratory() {
     const { web3, account, contractTracker, contractDonation, contractDerivative } = useWallet()
+    const router = useRouter()
     const [donationTokens, setDonationTokens] = useState<Awaited<ReturnType<typeof getDonationTokens>>>([])
     const [derivativeTokens, setDerivativeTokens] = useState<Awaited<ReturnType<typeof getDerivativeTokens>>>([])
     const [listedDerivatives, setListedDerivatives] = useState<Awaited<ReturnType<typeof getListedDerivatives>>>([])
@@ -151,6 +171,44 @@ export default function Laboratory() {
                             value={listedDerivatives.length}
                             color="blockchain"
                         />
+                    </Grid>
+                </motion.div>
+
+                {/* Acciones Rápidas */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="mb-8"
+                >
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                        Acciones Rápidas
+                    </h2>
+                    <Grid cols={{ xs: 1, md: 2 }} gap="md">
+                        {navigationCards.map((card, index) => (
+                            <motion.div
+                                key={card.name}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3, delay: 0.1 * index }}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                <Card
+                                    variant="elevated"
+                                    className="h-full cursor-pointer hover:shadow-2xl transition-all"
+                                    onClick={() => router.push(card.path)}
+                                >
+                                    <div className={`p-6 bg-gradient-to-br ${card.gradient} text-white`}>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="text-5xl">{card.icon}</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold mb-2">{card.name}</h3>
+                                        <p className="text-white/90 text-sm">{card.description}</p>
+                                    </div>
+                                </Card>
+                            </motion.div>
+                        ))}
                     </Grid>
                 </motion.div>
             </div>
