@@ -12,10 +12,20 @@ contract DeployBlood is Script {
         returns (BloodTracker, BloodDonation, BloodDerivative)
     {
         // uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        // Por defecto usar el deployer como admin si no está configurado
+        address initialAdmin = msg.sender;
+        try vm.envAddress("INITIAL_ADMIN_ADDRESS") returns (address admin) {
+            initialAdmin = admin;
+        } catch {}
+
         vm.startBroadcast();
         BloodDonation bld = new BloodDonation();
         BloodDerivative der = new BloodDerivative();
-        BloodTracker bldTracker = new BloodTracker(address(bld), address(der));
+        BloodTracker bldTracker = new BloodTracker(
+            address(bld),
+            address(der),
+            initialAdmin
+        );
         bld.transferOwnership(address(bldTracker));
         der.transferOwnership(address(bldTracker));
         vm.stopBroadcast();

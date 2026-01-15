@@ -69,15 +69,15 @@ contract Actions is Script {
         );
     }
 
-    function signUp(
+    function requestSignUp(
         string memory companyName,
         string memory location,
         BloodTracker.Role role
     ) public {
         vm.startBroadcast();
-        bldTracker.signUp(companyName, location, role);
+        bldTracker.requestSignUp(companyName, location, role);
         vm.stopBroadcast();
-        console.log("Donante ", msg.sender, "ha sido registrado");
+        console.log("Solicitud de registro enviada para: ", msg.sender);
     }
 
     function donate(address from) public {

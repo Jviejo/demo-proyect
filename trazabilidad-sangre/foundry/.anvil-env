@@ -1,3 +1,6 @@
 ANVIL_RPC_URL=https://rpc.codecrypto.academy
 TRIAS_RPC_URL=https://testnet.tscscan.io/testrpc
 TRIAS_KEY_ADDRESS=0x80b940f5261d499915d21cfc23fbb14d21a71b19
+
+# Admin inicial para deployment (usar primera cuenta de Anvil por defecto)
+INITIAL_ADMIN_ADDRESS=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266

@@ -14,6 +14,7 @@ contract BloodTest is Test {
     BloodDerivative der;
     // Blood testBloodMarketPlace;
     BloodTracker bldTracker;
+    address immutable ADMIN = makeAddr("ADMIN");
     address immutable USER = makeAddr("USER");
     address immutable DONATION_CENTER = makeAddr("DONATION_CENTER");
     address immutable LABORATORY = makeAddr("LABORATORY");
@@ -21,20 +22,38 @@ contract BloodTest is Test {
     uint256 MINIMUM_DONATION_FEE;
 
     function setUp() external {
-        DeployBlood deploy = new DeployBlood();
-        (bldTracker, bld, der) = deploy.run();
+        // Desplegar contratos con admin
+        vm.startPrank(ADMIN);
+        bld = new BloodDonation();
+        der = new BloodDerivative();
+        bldTracker = new BloodTracker(address(bld), address(der), ADMIN);
+        bld.transferOwnership(address(bldTracker));
+        der.transferOwnership(address(bldTracker));
+        vm.stopPrank();
+
         vm.deal(DONATION_CENTER, 1 ether);
         MINIMUM_DONATION_FEE = bldTracker.getMinimumDonationFee();
+
+        // Solicitudes de registro
         vm.prank(DONATION_CENTER);
-        bldTracker.signUp(
+        bldTracker.requestSignUp(
             "donationCenter",
             "Madrid",
             BloodTracker.Role.DONATION_CENTER
         );
+
         vm.prank(LABORATORY);
-        bldTracker.signUp("laboratory", "Madrid", BloodTracker.Role.LABORATORY);
+        bldTracker.requestSignUp("laboratory", "Madrid", BloodTracker.Role.LABORATORY);
+
         vm.prank(TRADER);
-        bldTracker.signUp("trader", "Madrid", BloodTracker.Role.TRADER);
+        bldTracker.requestSignUp("trader", "Madrid", BloodTracker.Role.TRADER);
+
+        // Aprobar todas las solicitudes como admin
+        vm.startPrank(ADMIN);
+        bldTracker.approveRequest(1); // DONATION_CENTER
+        bldTracker.approveRequest(2); // LABORATORY
+        bldTracker.approveRequest(3); // TRADER
+        vm.stopPrank();
     }
 
     function testOwnership() external view {

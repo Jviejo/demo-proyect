@@ -102,18 +102,15 @@ const Register = () => {
       );
 
       const receipt = await contractTracker.methods
-        .signUp(companyName, location, roleNum)
+        .requestSignUp(companyName, location, roleNum)
         .send({ from: account, gas: "1000000", gasPrice: 1000000000 });
 
-      // Update role in context
-      setRole(roleNum);
+      // Show success toast con mensaje actualizado
+      showTransactionSuccess(receipt.transactionHash, "Solicitud de registro enviada. Pendiente de aprobación por administradores.");
 
-      // Show success toast
-      showTransactionSuccess(receipt.transactionHash);
-
-      // Navigate to dashboard
+      // Navigate to pending page
       setTimeout(() => {
-        router.push("/all-role-grid");
+        router.push("/registro/pending");
       }, 2000);
     } catch (error: any) {
       console.error("Error registering:", error);
