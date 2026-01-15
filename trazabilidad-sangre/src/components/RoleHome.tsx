@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { AppContainer } from "../app/layout";
 import { useWallet } from "./ConnectWalletButton";
 import DonationCenter from "./Roles/DonationCenter";
@@ -13,6 +13,10 @@ import Section from "./ui/Section";
 import Grid from "./ui/Grid";
 import Card from "./ui/Card";
 import Image from "next/image";
+import PendingApprovalComponent from "./ApprovalStates/PendingApprovalComponent";
+import RejectedComponent from "./ApprovalStates/RejectedComponent";
+import RevokedComponent from "./ApprovalStates/RevokedComponent";
+import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
 
 const rolesData = [
   { name: "Company", img: "/Blood_cell512px.png", path: "/role-registro" },
@@ -22,24 +26,68 @@ const rolesData = [
 const RolesGrid = () => {
   const { account, web3, role, setRole, getRole, contractTracker } = useWallet();
   const router = useRouter();
+  const [companyStatus, setCompanyStatus] = useState<number | null>(null);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
   useEffect(() => {
-
     getRole();
-
+    loadCompanyStatus();
   }, [account, web3, role]);
 
-  const getRoleComponent = (role) => {
+  const loadCompanyStatus = async () => {
+    if (!account || !web3) return;
 
+    try {
+      setIsLoadingStatus(true);
+      const contractTracker = new web3.eth.Contract(
+        abiTracker,
+        process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS
+      );
+
+      const status = await contractTracker.methods
+        .getCompanyStatus(account)
+        .call();
+
+      setCompanyStatus(Number(status));
+    } catch (error) {
+      console.error("Error loading company status:", error);
+    } finally {
+      setIsLoadingStatus(false);
+    }
+  };
+
+  const getRoleComponent = (role) => {
+    // Si aún está cargando el status, mostrar spinner
+    if (isLoadingStatus) {
+      return <Spinner />;
+    }
+
+    // Si es una empresa (rol 1, 2, 3), verificar status de aprobación
+    if (role === 1 || role === 2 || role === 3) {
+      // RequestStatus: NO_REQUEST=0, PENDING=1, APPROVED=2, REJECTED=3, REVOKED=4
+      switch (companyStatus) {
+        case 1: // PENDING
+          return <PendingApprovalComponent />;
+        case 2: // APPROVED
+          // Mostrar dashboard según el rol
+          if (role === 1) return <DonationCenter />;
+          if (role === 2) return <Laboratory />;
+          if (role === 3) return <Trader />;
+          break;
+        case 3: // REJECTED
+          return <RejectedComponent />;
+        case 4: // REVOKED
+          return <RevokedComponent />;
+        default:
+          // Si no tiene status o es NO_REQUEST, mostrar la grid de selección
+          break;
+      }
+    }
+
+    // Flujo normal para otros roles o estados
     switch (role) {
       case null:
         return <Spinner />
-      case 1:
-        return <DonationCenter />
-      case 2:
-        return <Laboratory />
-      case 3:
-        return <Trader />
       case 4:
         return <Donor />
       default:
