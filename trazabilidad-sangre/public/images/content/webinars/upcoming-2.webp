@@ -1,0 +1,14 @@
+<svg width="800" height="450" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="up2Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#32cd32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#up2Grad)"/>
+  <text x="400" y="200" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">📋</text>
+  <text x="400" y="260" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="white" text-anchor="middle">Normativa</text>
+  <text x="400" y="300" font-family="Arial, sans-serif" font-size="20" fill="rgba(255,255,255,0.9)" text-anchor="middle">Europea 2026</text>
+  <circle cx="650" cy="120" r="60" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="150" cy="330" r="80" fill="rgba(255,255,255,0.08)"/>
+</svg>

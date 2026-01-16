@@ -1,0 +1,6 @@
+Error: error sending request for url (https://rpc-testnet.trias.one/)
+
+Context:
+- Error #0: client error (Connect)
+- Error #1: dns error
+- Error #2: Host desconocido. (os error 11001)

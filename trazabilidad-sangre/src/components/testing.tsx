@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import "./../app/globals.css";
 import GetWalletModal from "@/components/GetWalletModal"; // Ensure you have this component
+import { truncateAddress } from "@/lib/helpers"
 
 const ConnectWalletButton = () => {
   const [account, setAccount] = useState("");
@@ -149,9 +150,7 @@ const ConnectWalletButton = () => {
                   className="wallet-logo"
                 />
                 {web3?.utils.isAddress(account)
-                  ? `${account.substring(0, 6)} ... ${account.substring(
-                      account.length - 4
-                    )}`
+                  ? truncateAddress(account)
                   : account}
                 <div className="menu-icon">
                   <div className="menu-line"></div>

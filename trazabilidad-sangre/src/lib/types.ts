@@ -27,7 +27,9 @@ export interface TransferEventLog extends EventLog {
 export enum EventType {
     Generation = 'Generation',
     Transfer = 'Transfer',
-    Consummation = 'Consumation'
+    Consummation = 'Consumation',
+    PatientAdministration = 'PatientAdministration',
+    ManufacturerBatch = 'ManufacturerBatch'
 }
 
 export interface EventTrace {
@@ -37,6 +39,11 @@ export interface EventTrace {
     name: string
     location: string
     timestamp: Date
+    patientId?: string
+    medicalReason?: string
+    batchId?: number
+    productType?: string
+    derivativeIds?: number[]
 }
 
 export interface ProductTrace {
@@ -49,4 +56,56 @@ export enum Derivative {
     Erythrocytes = 2,
     Platelets = 3,
     Blood = 4
+}
+
+// Tipos para Hospital
+export interface PatientAdministration {
+    tokenId: number
+    patientId: string
+    medicalReason: string
+    administeredDate: Date
+    hospital: Address
+    isBloodBag: boolean
+}
+
+// Tipos para Manufacturer
+export interface ManufacturedBatch {
+    batchId: number
+    derivativeIds: number[]
+    productType: string
+    createdDate: Date
+    manufacturer: Address
+}
+
+export enum ProductType {
+    SERUM = "SERUM",
+    CREAM = "CREAM",
+    MASK = "MASK",
+    TREATMENT = "TREATMENT",
+    SUPPLEMENT = "SUPPLEMENT"
+}
+
+// Eventos nuevos
+export type PatientAdministeredEventValues = {
+    tokenId: bigint
+    hospital: Address
+    patientId: string
+    isBloodBag: boolean
+    timestamp: bigint
+}
+
+export interface PatientAdministeredEventLog extends EventLog {
+    returnValues: PatientAdministeredEventValues
+}
+
+export type BatchCreatedEventValues = {
+    batchId: bigint
+    manufacturer: Address
+    derivativeIds: bigint[]
+    productType: string
+    timestamp: bigint
+}
+
+export interface BatchCreatedEventLog extends EventLog {
+    returnValues: BatchCreatedEventValues
 }

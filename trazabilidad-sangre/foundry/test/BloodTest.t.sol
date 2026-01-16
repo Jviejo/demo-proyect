@@ -14,6 +14,7 @@ contract BloodTest is Test {
     BloodDerivative der;
     // Blood testBloodMarketPlace;
     BloodTracker bldTracker;
+    address immutable ADMIN = makeAddr("ADMIN");
     address immutable USER = makeAddr("USER");
     address immutable DONATION_CENTER = makeAddr("DONATION_CENTER");
     address immutable LABORATORY = makeAddr("LABORATORY");
@@ -21,20 +22,38 @@ contract BloodTest is Test {
     uint256 MINIMUM_DONATION_FEE;
 
     function setUp() external {
-        DeployBlood deploy = new DeployBlood();
-        (bldTracker, bld, der) = deploy.run();
+        // Desplegar contratos con admin
+        vm.startPrank(ADMIN);
+        bld = new BloodDonation();
+        der = new BloodDerivative();
+        bldTracker = new BloodTracker(address(bld), address(der), ADMIN);
+        bld.transferOwnership(address(bldTracker));
+        der.transferOwnership(address(bldTracker));
+        vm.stopPrank();
+
         vm.deal(DONATION_CENTER, 1 ether);
         MINIMUM_DONATION_FEE = bldTracker.getMinimumDonationFee();
+
+        // Solicitudes de registro
         vm.prank(DONATION_CENTER);
-        bldTracker.signUp(
+        bldTracker.requestSignUp(
             "donationCenter",
             "Madrid",
             BloodTracker.Role.DONATION_CENTER
         );
+
         vm.prank(LABORATORY);
-        bldTracker.signUp("laboratory", "Madrid", BloodTracker.Role.LABORATORY);
+        bldTracker.requestSignUp("laboratory", "Madrid", BloodTracker.Role.LABORATORY);
+
         vm.prank(TRADER);
-        bldTracker.signUp("trader", "Madrid", BloodTracker.Role.TRADER);
+        bldTracker.requestSignUp("trader", "Madrid", BloodTracker.Role.TRADER);
+
+        // Aprobar todas las solicitudes como admin
+        vm.startPrank(ADMIN);
+        bldTracker.approveRequest(1); // DONATION_CENTER
+        bldTracker.approveRequest(2); // LABORATORY
+        bldTracker.approveRequest(3); // TRADER
+        vm.stopPrank();
     }
 
     function testOwnership() external view {
@@ -64,7 +83,8 @@ contract BloodTest is Test {
         return (tokenIdPlasma, tokenIdErythrocytes, tokenIdPlatelets);
     }
 
-    function testFailDonateFunction() public {
+    function test_RevertWhen_DonateWithoutPayment() public {
+        vm.expectRevert();
         bldTracker.donate(DONATION_CENTER);
     }
 
@@ -89,6 +109,7 @@ contract BloodTest is Test {
         assert(beforeTokenOnSale.length < afterTokensOnSale.length);
     }
 
+    // DEPRECATED: Este test ahora usa LABORATORY ya que TRADER solo puede listar derivados
     function testListItemMarketplaceTraderRole()
         public
         returns (uint256 tokenId)
@@ -99,9 +120,9 @@ contract BloodTest is Test {
         tokenId = testDonateFunction();
         vm.startPrank(DONATION_CENTER);
         bld.approve(address(this), tokenId);
-        bld.transferFrom(DONATION_CENTER, TRADER, tokenId);
+        bld.transferFrom(DONATION_CENTER, LABORATORY, tokenId); // Cambiado a LABORATORY
         vm.stopPrank();
-        vm.startPrank(TRADER);
+        vm.startPrank(LABORATORY); // Cambiado a LABORATORY
         bld.approve(address(bldTracker), tokenId);
         bldTracker.listItem(address(bld), tokenId, 0.1 ether);
         vm.stopPrank();
@@ -113,25 +134,18 @@ contract BloodTest is Test {
         assert(beforeTokenOnSale.length < afterTokensOnSale.length);
     }
 
-    function testFailListItemMarketplace() public {
-        uint256[] memory beforeTokenOnSale = bldTracker.getTokensOnSale(
-            address(bld)
-        );
+    function test_RevertWhen_ListItemWithoutRole() public {
         uint256 tokenId = testDonateFunction();
         vm.startPrank(DONATION_CENTER);
         bld.approve(address(this), tokenId);
-        bld.transferFrom(DONATION_CENTER, LABORATORY, tokenId);
+        bld.transferFrom(DONATION_CENTER, USER, tokenId);
         vm.stopPrank();
+
         vm.startPrank(USER);
-        // bld.approve(address(bldTracker), tokenId);
+        bld.approve(address(bldTracker), tokenId);
+        vm.expectRevert();
         bldTracker.listItem(address(bld), tokenId, 0.1 ether);
         vm.stopPrank();
-
-        uint256[] memory afterTokensOnSale = bldTracker.getTokensOnSale(
-            address(bld)
-        );
-
-        assert(beforeTokenOnSale.length < afterTokensOnSale.length);
     }
 
     // function testFailBuyItemMarketplaceWithoutTraderRole() external {

@@ -50,7 +50,15 @@ out/
 broadcast/
 !/broadcast
 /broadcast/*/31337/
+/broadcast/*/81234/
 /broadcast/**/dry-run/
 
 # Docs
 docs/
+
+# Variables de entorno sensibles
+foundry/.anvil-env
+.password-besu
+
+# Wallets de testing (contienen claves privadas)
+foundry/.clientWallets

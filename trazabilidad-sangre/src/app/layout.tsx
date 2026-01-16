@@ -1,6 +1,24 @@
 import React, { ReactNode } from "react";
-import Header from "./../components/Header";
-import Footer from "./../components/Footer";
+import { Inter, JetBrains_Mono } from "next/font/google";
+import ClientLayout from "./../components/ClientLayout";
+import ToastProvider from "./../components/ui/ToastProvider";
+import ErrorBoundary from "./../components/ErrorBoundary";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+// Force dynamic rendering for all pages to avoid wallet SSR issues
+export const dynamic = 'force-dynamic';
 
 interface AppContainerProps {
   children: React.ReactNode;
@@ -21,12 +39,15 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body>
-        <div id="root" className="main-container">
-          <Header />
-          <main>{children}</main>
-          <Footer />
-        </div>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+        <ErrorBoundary>
+          <div id="root" className="main-container">
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </div>
+          <ToastProvider />
+        </ErrorBoundary>
       </body>
     </html>
   );

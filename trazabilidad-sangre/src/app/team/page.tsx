@@ -1,16 +1,25 @@
-import { AppContainer } from "../layout";
-import BuildingUp from "@/components/BuildingUp";
-import "./../globals.css";
+'use client';
 
-export default function Team() {
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+/**
+ * @deprecated Esta página ha sido fusionada con /about
+ * Redirige automáticamente a /about
+ */
+export default function TeamRedirect() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/about');
+  }, [router]);
+
   return (
-    <AppContainer>
-      <div className="feature-buildingup">
-        <div className="feature-buildingup-text">
-          <h2>Team</h2>
-        </div>
-        <BuildingUp />
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blockchain-600 mx-auto mb-4"></div>
+        <p className="text-slate-600">Redirigiendo a Sobre Nosotros...</p>
       </div>
-    </AppContainer>
+    </div>
   );
 }

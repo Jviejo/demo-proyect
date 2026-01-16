@@ -1,17 +1,45 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { useWallet } from "../ConnectWalletButton"
 import { getEventsFromDerivative, getTraceFromDonation } from "@/lib/events"
 import { DerivateCard } from "../LabComponents/DerivateCard"
 import { BloodCard } from "../LabComponents/BloodCard"
+import { motion } from "framer-motion"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts"
+import { Skeleton } from "../ui/Skeleton"
+import { Stat } from "../ui/Stat"
+import Grid from "../ui/Grid"
+import { Card } from "../ui/Card"
+import { Badge } from "../ui/Badge"
+import { truncateAddress } from "@/lib/helpers"
+import { BeakerIcon, CubeIcon, ShoppingBagIcon } from '@heroicons/react/24/solid'
 
+const navigationCards = [
+    {
+        name: "Marketplace",
+        description: "Comprar/Vender derivados",
+        icon: "🛒",
+        path: "/marketplace",
+        gradient: "from-blockchain-500 to-blockchain-700"
+    },
+    {
+        name: "Trazabilidad",
+        description: "Rastrear productos",
+        icon: "🔍",
+        path: "/trace",
+        gradient: "from-medical-500 to-medical-700"
+    }
+]
 
 export default function Laboratory() {
     const { web3, account, contractTracker, contractDonation, contractDerivative } = useWallet()
+    const router = useRouter()
     const [donationTokens, setDonationTokens] = useState<Awaited<ReturnType<typeof getDonationTokens>>>([])
     const [derivativeTokens, setDerivativeTokens] = useState<Awaited<ReturnType<typeof getDerivativeTokens>>>([])
     const [listedDerivatives, setListedDerivatives] = useState<Awaited<ReturnType<typeof getListedDerivatives>>>([])
+    const [isLoading, setIsLoading] = useState(true)
 
     async function getDonationTokens() {
         const arrDonationTokens = []
@@ -25,7 +53,7 @@ export default function Laboratory() {
                 donationCenterAddress: donationTrace!.trace[0].owner,
                 donationCenterName: donationTrace!.trace[0].name,
                 donationCenterLocation: donationTrace!.trace[0].location
-            }) 
+            })
         }
         setDonationTokens(arrDonationTokens)
         return arrDonationTokens
@@ -35,15 +63,34 @@ export default function Laboratory() {
         const arrDerivativeTokens = []
         const numTokens = await contractDerivative!.methods.balanceOf(account).call()
         for (let i = 0; i < Number(numTokens); i++){
-            const tokenId = await contractDerivative!.methods.tokenOfOwnerByIndex(account, i).call()
-            const {tokenIdOrigin, derivative} = await contractDerivative!.methods.products(tokenId).call()
-            const events = await getEventsFromDerivative(Number(tokenId))
-            arrDerivativeTokens.push({
-                tokenId: Number(tokenId),
-                type: Number(derivative),
-                processDate: events[0].timestamp,
-                tokenIdOrigin: Number(tokenIdOrigin)
-            }) 
+            try {
+                const tokenId = await contractDerivative!.methods.tokenOfOwnerByIndex(account, i).call()
+                const tokenIdNum = Number(tokenId)
+
+                // Validar que tokenId sea un número válido
+                if (isNaN(tokenIdNum)) {
+                    console.error(`Invalid tokenId at index ${i}:`, tokenId)
+                    continue
+                }
+
+                const {tokenIdOrigin, derivative} = await contractDerivative!.methods.products(tokenIdNum).call()
+                const events = await getEventsFromDerivative(tokenIdNum)
+
+                // Validar que hay eventos
+                if (!events || events.length === 0) {
+                    console.warn(`No events found for derivative token ${tokenIdNum}`)
+                    continue
+                }
+
+                arrDerivativeTokens.push({
+                    tokenId: tokenIdNum,
+                    type: Number(derivative),
+                    processDate: events[0].timestamp,
+                    tokenIdOrigin: Number(tokenIdOrigin)
+                })
+            } catch (error) {
+                console.error(`Error processing derivative token at index ${i}:`, error)
+            }
         }
         setDerivativeTokens(arrDerivativeTokens)
         return arrDerivativeTokens
@@ -53,74 +100,297 @@ export default function Laboratory() {
         const arrListedDerivatives = []
         const tokensOnSale = await contractTracker!.methods.getTokensOnSale(contractDerivative?.options.address).call()
         for (const tokenId of tokensOnSale){
-            const {"0": price, "1": seller} = await contractTracker!.methods.getListing(contractDerivative!.options.address, tokenId).call()
-            if (web3!.utils.toChecksumAddress(seller) !== web3!.utils.toChecksumAddress(account!)) continue
-            const {tokenIdOrigin, derivative} = await contractDerivative!.methods.products(tokenId).call()
-            const events = await getEventsFromDerivative(Number(tokenId))
-            arrListedDerivatives.push({
-                tokenId: Number(tokenId),
-                type: Number(derivative),
-                processDate: events[0].timestamp,
-                tokenIdOrigin: Number(tokenIdOrigin),
-                price: BigInt(price)
-            })
+            try {
+                const {"0": price, "1": seller} = await contractTracker!.methods.getListing(contractDerivative!.options.address, tokenId).call()
+                if (web3!.utils.toChecksumAddress(seller) !== web3!.utils.toChecksumAddress(account!)) continue
+
+                const tokenIdNum = Number(tokenId)
+
+                // Validar que tokenId sea un número válido
+                if (isNaN(tokenIdNum)) {
+                    console.error(`Invalid tokenId in listing:`, tokenId)
+                    continue
+                }
+
+                const {tokenIdOrigin, derivative} = await contractDerivative!.methods.products(tokenIdNum).call()
+                const events = await getEventsFromDerivative(tokenIdNum)
+
+                // Validar que hay eventos
+                if (!events || events.length === 0) {
+                    console.warn(`No events found for listed derivative token ${tokenIdNum}`)
+                    continue
+                }
+
+                arrListedDerivatives.push({
+                    tokenId: tokenIdNum,
+                    type: Number(derivative),
+                    processDate: events[0].timestamp,
+                    tokenIdOrigin: Number(tokenIdOrigin),
+                    price: BigInt(price)
+                })
+            } catch (error) {
+                console.error(`Error processing listed derivative token ${tokenId}:`, error)
+            }
         }
         setListedDerivatives(arrListedDerivatives)
         return arrListedDerivatives
     }
 
+    async function refreshData() {
+        setIsLoading(true)
+        try {
+            await Promise.all([
+                getDonationTokens(),
+                getDerivativeTokens(),
+                getListedDerivatives()
+            ])
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     useEffect(() => {
         if (web3) {
-            getDonationTokens()
-            getDerivativeTokens()
-            getListedDerivatives()
+            refreshData()
         }
     }, [web3])
 
-    return <div className="flex flex-col flex-1 grow w-max h-full p-3 gap-5">
-        <h2>Laboratory dashboard: {account}</h2>
-        <div className="flex flex-row gap-28">
-            <section className="border border-solid p-5 flex flex-col gap-5">
-                <h2>Stock of blood units</h2>
-                {donationTokens.map((value, key) => {
-                    return <BloodCard
-                        key={value.tokenId}
-                        tokenId={value.tokenId}
-                        donationCenterAddress={value.donationCenterAddress}
-                        donationCenterName={value.donationCenterName}
-                        donationCenterLocation={value.donationCenterLocation}
-                        donationDate={value.extractionDatetime}>
-                    </BloodCard>
-                })}
-                {!donationTokens.length && <div>No tiene donaciones en propiedad</div>}
-            </section>
-            <section className="border border-solid p-5 flex flex-col gap-5">
-                <h2>Stock of derivatives</h2>
-                {derivativeTokens.map((value, key) => {
-                    return <DerivateCard 
-                        key={value.tokenId}
-                        tokenId={value.tokenId} 
-                        product={value.type} 
-                        timestamp={value.processDate} 
-                        tokenIdOrigin={value.tokenIdOrigin}>
-                    </DerivateCard>
-                })}
-                {!derivativeTokens.length && <div>No tiene derivados en propiedad</div>}
-            </section>
-            <section className="border border-solid p-5 flex flex-col gap-5">
-                <h2>Derivatives for sale</h2>
-                {listedDerivatives.map((value, key) => {
-                    return <DerivateCard 
-                        key={value.tokenId}
-                        tokenId={value.tokenId} 
-                        product={value.type} 
-                        timestamp={value.processDate} 
-                        tokenIdOrigin={value.tokenIdOrigin}
-                        price={value.price}>
-                    </DerivateCard>
-                })}
-                {!listedDerivatives.length && <div>No tiene derivados en venta</div>}
-            </section>
+    // Calcular stats para gráficos
+    const derivativeDistribution = [
+        { name: 'Plasma', value: derivativeTokens.filter(d => d.type === 1).length, color: '#FF6B6B' },
+        { name: 'Erythrocytes', value: derivativeTokens.filter(d => d.type === 2).length, color: '#4ECDC4' },
+        { name: 'Platelets', value: derivativeTokens.filter(d => d.type === 3).length, color: '#FFE66D' }
+    ].filter(item => item.value > 0)
+
+    // Datos para gráfico de línea (simulado - últimos 7 días)
+    const processingHistory = [
+        { day: 'Mon', processed: 3 },
+        { day: 'Tue', processed: 5 },
+        { day: 'Wed', processed: 2 },
+        { day: 'Thu', processed: 7 },
+        { day: 'Fri', processed: 4 },
+        { day: 'Sat', processed: 6 },
+        { day: 'Sun', processed: donationTokens.length }
+    ]
+
+    return (
+        <div className="flex flex-col flex-1 w-full h-full p-6 gap-6 bg-slate-50">
+            {/* Header con título */}
+            <div className="flex flex-col gap-4">
+                <h1 className="text-3xl font-bold text-slate-900">Dashboard Laboratorio</h1>
+
+                {/* Stats Cards */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                    <Grid cols={{ xs: 1, sm: 2, lg: 3 }} gap="md">
+                        <Stat
+                            icon={<BeakerIcon className="h-6 w-6" />}
+                            label="Blood Units"
+                            value={donationTokens.length}
+                            color="blood"
+                        />
+                        <Stat
+                            icon={<CubeIcon className="h-6 w-6" />}
+                            label="Derivatives"
+                            value={derivativeTokens.length}
+                            color="medical"
+                        />
+                        <Stat
+                            icon={<ShoppingBagIcon className="h-6 w-6" />}
+                            label="Items on Sale"
+                            value={listedDerivatives.length}
+                            color="blockchain"
+                        />
+                    </Grid>
+                </motion.div>
+
+                {/* Acciones Rápidas */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="mb-8"
+                >
+                    <h2 className="text-2xl font-bold text-slate-900 mb-6">
+                        Acciones Rápidas
+                    </h2>
+                    <Grid cols={{ xs: 1, md: 2 }} gap="md">
+                        {navigationCards.map((card, index) => (
+                            <motion.div
+                                key={card.name}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3, delay: 0.1 * index }}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                <Card
+                                    variant="elevated"
+                                    className="h-full cursor-pointer hover:shadow-2xl transition-all"
+                                    onClick={() => router.push(card.path)}
+                                >
+                                    <div className={`p-6 bg-gradient-to-br ${card.gradient} text-white`}>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="text-5xl">{card.icon}</span>
+                                        </div>
+                                        <h3 className="text-xl font-bold mb-2">{card.name}</h3>
+                                        <p className="text-white/90 text-sm">{card.description}</p>
+                                    </div>
+                                </Card>
+                            </motion.div>
+                        ))}
+                    </Grid>
+                </motion.div>
+            </div>
+
+            {/* Gráficos */}
+            {!isLoading && derivativeTokens.length > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* PieChart - Distribución de derivados */}
+                    <motion.div
+                        className="bg-white rounded-xl shadow-card p-6"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 }}
+                    >
+                        <h3 className="text-lg font-semibold text-slate-900 mb-4">Derivative Distribution</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={derivativeDistribution}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                    outerRadius={100}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                >
+                                    {derivativeDistribution.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <RechartsTooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </motion.div>
+
+                    {/* LineChart - Histórico de procesamiento */}
+                    <motion.div
+                        className="bg-white rounded-xl shadow-card p-6"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <h3 className="text-lg font-semibold text-slate-900 mb-4">Processing History (Last 7 Days)</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <LineChart data={processingHistory}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="day" />
+                                <YAxis />
+                                <RechartsTooltip />
+                                <Line type="monotone" dataKey="processed" stroke="#503291" strokeWidth={2} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </motion.div>
+                </div>
+            )}
+
+            {/* Secciones de inventario */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                {/* Stock of blood units */}
+                <section className="bg-white rounded-xl shadow-card p-6">
+                    <h2 className="text-xl font-bold text-slate-900 mb-4 border-b pb-3">Stock of Blood Units</h2>
+                    <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto">
+                        {isLoading ? (
+                            <>
+                                <Skeleton variant="card" />
+                                <Skeleton variant="card" />
+                            </>
+                        ) : donationTokens.length > 0 ? (
+                            donationTokens.map((value) => (
+                                <BloodCard
+                                    key={value.tokenId}
+                                    tokenId={value.tokenId}
+                                    donationCenterAddress={value.donationCenterAddress}
+                                    donationCenterName={value.donationCenterName}
+                                    donationCenterLocation={value.donationCenterLocation}
+                                    donationDate={value.extractionDatetime}
+                                    onProcessSuccess={refreshData}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center py-8 text-slate-500">
+                                <div className="text-6xl mb-4">🩸</div>
+                                <p className="font-medium">No blood units in stock</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* Stock of derivatives */}
+                <section className="bg-white rounded-xl shadow-card p-6">
+                    <h2 className="text-xl font-bold text-slate-900 mb-4 border-b pb-3">Stock of Derivatives</h2>
+                    <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto">
+                        {isLoading ? (
+                            <>
+                                <Skeleton variant="card" />
+                                <Skeleton variant="card" />
+                            </>
+                        ) : derivativeTokens.length > 0 ? (
+                            derivativeTokens.map((value) => (
+                                <DerivateCard
+                                    key={value.tokenId}
+                                    tokenId={value.tokenId}
+                                    product={value.type}
+                                    timestamp={value.processDate}
+                                    tokenIdOrigin={value.tokenIdOrigin}
+                                    onListSuccess={refreshData}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center py-8 text-slate-500">
+                                <div className="text-6xl mb-4">🧪</div>
+                                <p className="font-medium">No derivatives in stock</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* Derivatives for sale */}
+                <section className="bg-white rounded-xl shadow-card p-6">
+                    <h2 className="text-xl font-bold text-slate-900 mb-4 border-b pb-3">Derivatives for Sale</h2>
+                    <div className="flex flex-col gap-4 max-h-[600px] overflow-y-auto">
+                        {isLoading ? (
+                            <>
+                                <Skeleton variant="card" />
+                                <Skeleton variant="card" />
+                            </>
+                        ) : listedDerivatives.length > 0 ? (
+                            listedDerivatives.map((value) => (
+                                <DerivateCard
+                                    key={value.tokenId}
+                                    tokenId={value.tokenId}
+                                    product={value.type}
+                                    timestamp={value.processDate}
+                                    tokenIdOrigin={value.tokenIdOrigin}
+                                    price={value.price}
+                                    onCancelSuccess={refreshData}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center py-8 text-slate-500">
+                                <div className="text-6xl mb-4">💰</div>
+                                <p className="font-medium">No items listed for sale</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            </div>
         </div>
-    </div>
+    )
 }

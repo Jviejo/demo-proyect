@@ -1,0 +1,251 @@
+################################################################################
+# BESU CODECRYPTO - BLOOD TRACEABILITY SYSTEM
+# Smart Contracts Deployment Information
+# Deployment Date: 2026-01-16
+################################################################################
+
+[NETWORK_INFORMATION]
+Network_Name=Besu CodeCrypto
+RPC_URL=https://besu1.proyectos.codecrypto.academy
+Chain_ID_Decimal=81234
+Chain_ID_Hex=0x13d52
+Currency_Symbol=ETH
+Block_Explorer=N/A
+
+# RPC Endpoints de Respaldo
+RPC_Backup_1=https://besu2.proyectos.codecrypto.academy
+RPC_Backup_2=https://besu3.proyectos.codecrypto.academy
+RPC_Backup_3=https://besu4.proyectos.codecrypto.academy
+
+################################################################################
+[ADMIN_WALLET]
+################################################################################
+Address=0x60015448D7418C4e70275a5aA2340086A9f8Dd01
+Private_Key=0x3f5d84191f172800677da32d4897e048404cfeb23c2c360edaa4341464d43b1c
+Role=Super Admin / Initial Admin
+Balance_at_Deployment=~9000 ETH
+
+# ⚠️ WARNING: Esta private key es SOLO para desarrollo/testing
+# NUNCA usar en producción con fondos reales
+
+################################################################################
+[DEPLOYED_CONTRACTS]
+################################################################################
+
+# BloodTracker - Contrato Principal
+BloodTracker_Address=0xAD02838C74214EE9FD253b678c489a7885527f1C
+BloodTracker_Compiler=Solidity 0.8.20
+BloodTracker_Optimizer=Enabled (1000 runs)
+BloodTracker_Size=18,117 bytes
+BloodTracker_Deployment_Block=298724
+
+# BloodDonation - ERC721 NFT (Bolsa Completa)
+BloodDonation_Address=0x02f2Ad3c32374c98DD52747a8cf825907CbDe794
+BloodDonation_Standard=ERC721
+BloodDonation_Owner=0xAD02838C74214EE9FD253b678c489a7885527f1C
+BloodDonation_Size=6,050 bytes
+BloodDonation_Minimum_Fee=0.001 ETH
+
+# BloodDerivative - ERC721 NFT (Derivados)
+BloodDerivative_Address=0x8Cdd7b2Fa65D5c5EbadCf660821d4150559c42bb
+BloodDerivative_Standard=ERC721
+BloodDerivative_Owner=0xAD02838C74214EE9FD253b678c489a7885527f1C
+BloodDerivative_Size=6,066 bytes
+
+################################################################################
+[DERIVATIVE_TYPES]
+################################################################################
+Type_0=Plasma
+Type_1=Eritrocitos (Glóbulos Rojos)
+Type_2=Plaquetas
+
+################################################################################
+[ROLES]
+################################################################################
+Role_0=Sin Registrar
+Role_1=Centro de Donación (DONATION_CENTER)
+Role_2=Laboratorio (LABORATORY)
+Role_3=Trader (TRADER)
+Role_4=Hospital (HOSPITAL)
+Role_5=Manufacturer (MANUFACTURER)
+
+################################################################################
+[GAS_USAGE]
+################################################################################
+Total_Gas_Used=9,198,436 gas
+Gas_Price=0.000000001 gwei
+Total_Cost=0.000000000009198436 ETH
+
+################################################################################
+[DEPLOYMENT_FILES]
+################################################################################
+Deployment_Script=foundry/script/DeployBloodWithAdmin.s.sol
+Deployment_Logs=foundry/broadcast/DeployBloodWithAdmin.s.sol/81234/run-latest.json
+ABI_BloodTracker=src/lib/contracts/BloodTracker.ts
+ABI_BloodDonation=src/lib/contracts/BloodDonation.ts
+ABI_BloodDerivative=src/lib/contracts/BloodDerivative.ts
+
+################################################################################
+[FRONTEND_CONFIGURATION]
+################################################################################
+# Archivo: .env.local
+
+NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS=0xAD02838C74214EE9FD253b678c489a7885527f1C
+NEXT_PUBLIC_BLD_DONATION_CONTRACT_ADDRESS=0x02f2Ad3c32374c98DD52747a8cf825907CbDe794
+NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS=0x8Cdd7b2Fa65D5c5EbadCf660821d4150559c42bb
+NEXT_PUBLIC_CHAIN_ID=81234
+NEXT_PUBLIC_RPC_URL=https://besu1.proyectos.codecrypto.academy
+NEXT_PUBLIC_ADMIN_ADDRESS=0x60015448D7418C4e70275a5aA2340086A9f8Dd01
+
+################################################################################
+[FOUNDRY_CONFIGURATION]
+################################################################################
+# Archivo: foundry/.anvil-env
+
+BESU_RPC_URL=https://besu1.proyectos.codecrypto.academy
+BESU_ADMIN_ADDRESS=0x60015448D7418C4e70275a5aA2340086A9f8Dd01
+BESU_PRIVATE_KEY=0x3f5d84191f172800677da32d4897e048404cfeb23c2c360edaa4341464d43b1c
+
+# Archivo: foundry.toml
+Solidity_Version=0.8.20
+Optimizer_Enabled=true
+Optimizer_Runs=1000
+
+################################################################################
+[METAMASK_SETUP]
+################################################################################
+# Agregar Red Manualmente en MetaMask:
+
+Network_Name=Besu CodeCrypto
+New_RPC_URL=https://besu1.proyectos.codecrypto.academy
+Chain_ID=81234
+Currency_Symbol=ETH
+
+# Importar Wallet Admin (Solo Testing):
+Import_Private_Key=0x3f5d84191f172800677da32d4897e048404cfeb23c2c360edaa4341464d43b1c
+
+################################################################################
+[VERIFICATION_COMMANDS]
+################################################################################
+
+# Verificar Conexión
+cast block latest --rpc-url https://besu1.proyectos.codecrypto.academy
+cast chain-id --rpc-url https://besu1.proyectos.codecrypto.academy
+
+# Verificar Código Desplegado
+cast code 0xAD02838C74214EE9FD253b678c489a7885527f1C --rpc-url https://besu1.proyectos.codecrypto.academy
+cast code 0x02f2Ad3c32374c98DD52747a8cf825907CbDe794 --rpc-url https://besu1.proyectos.codecrypto.academy
+cast code 0x8Cdd7b2Fa65D5c5EbadCf660821d4150559c42bb --rpc-url https://besu1.proyectos.codecrypto.academy
+
+# Verificar Balance del Admin
+cast balance 0x60015448D7418C4e70275a5aA2340086A9f8Dd01 --rpc-url https://besu1.proyectos.codecrypto.academy
+
+# Verificar Ownership de BloodDonation
+cast call 0x02f2Ad3c32374c98DD52747a8cf825907CbDe794 "owner()" --rpc-url https://besu1.proyectos.codecrypto.academy
+
+# Verificar Ownership de BloodDerivative
+cast call 0x8Cdd7b2Fa65D5c5EbadCf660821d4150559c42bb "owner()" --rpc-url https://besu1.proyectos.codecrypto.academy
+
+################################################################################
+[DEPLOYMENT_COMMANDS]
+################################################################################
+
+# Deployment Completo
+cd foundry
+source .anvil-env
+INITIAL_ADMIN_ADDRESS=$BESU_ADMIN_ADDRESS forge script script/DeployBloodWithAdmin.s.sol:DeployBloodWithAdmin --rpc-url $BESU_RPC_URL --private-key $BESU_PRIVATE_KEY --broadcast -vvv
+
+# Seed Data (Opcional - Requiere actualizar direcciones primero)
+forge script script/SeedData.s.sol:SeedData --rpc-url $BESU_RPC_URL --private-key $BESU_PRIVATE_KEY --broadcast -vvvv
+
+################################################################################
+[CONTRACT_FEATURES]
+################################################################################
+
+# BloodTracker - Funciones Principales:
+- requestSignUp(string name, string location, uint8 role)
+- approveRequest(uint256 requestId)
+- rejectRequest(uint256 requestId, string reason)
+- donate(address from) payable
+- process(uint256 tokenId)
+- listItem(address nftAddress, uint256 tokenId, uint256 price)
+- buyItem(address nftAddress, uint256 tokenId) payable
+- registerPatientAdministration(uint256 tokenId, bool isBloodBag, string patientId, string medicalReason)
+- createManufacturedBatch(uint256[] derivativeIds, string productType)
+- addAdmin(address admin)
+- removeAdmin(address admin)
+- modifyRole(address company, uint8 newRole)
+- revokeCompany(address company)
+
+# BloodDonation - Funciones ERC721:
+- mint(address to) - Solo owner (BloodTracker)
+- burn(uint256 tokenId) - Solo owner
+- tokenURI(uint256 tokenId)
+- balanceOf(address owner)
+- ownerOf(uint256 tokenId)
+
+# BloodDerivative - Funciones ERC721:
+- mint(address to, uint8 derivativeType, uint256 originalDonationId) - Solo owner
+- getDerivativeInfo(uint256 tokenId)
+- tokenURI(uint256 tokenId)
+
+################################################################################
+[DEPLOYMENT_TRANSACTIONS]
+################################################################################
+
+Transaction_1=Deploy BloodDonation
+Transaction_2=Deploy BloodDerivative
+Transaction_3=Deploy BloodTracker
+Transaction_4=Transfer BloodDonation ownership to BloodTracker
+Transaction_5=Transfer BloodDerivative ownership to BloodTracker
+
+Total_Transactions=5
+Status=All Successful ✅
+
+################################################################################
+[SECURITY_NOTES]
+################################################################################
+
+1. Private Keys: La private key mostrada es SOLO para desarrollo/testing
+2. Producción: NUNCA usar estas keys en producción con fondos reales
+3. Gitignore: El archivo foundry/.anvil-env está en .gitignore
+4. Broadcasts: Los logs en /broadcast/*/81234/ están ignorados por git
+5. Recomendación: Para producción usar hardware wallets o keystores cifrados
+
+################################################################################
+[TROUBLESHOOTING]
+################################################################################
+
+# Problema: Contract size too large
+Solución: Habilitar optimizer en foundry.toml con optimizer_runs=1000
+
+# Problema: Wrong network
+Solución: Verificar que MetaMask esté en Chain ID 81234
+
+# Problema: Insufficient funds
+Solución: Verificar balance del admin con cast balance
+
+# Problema: Contract not deployed
+Solución: Verificar con cast code que retorna bytecode (no 0x)
+
+################################################################################
+[QUICK_REFERENCE]
+################################################################################
+
+Network:         Besu CodeCrypto
+Chain ID:        81234
+RPC:             https://besu1.proyectos.codecrypto.academy
+
+Admin:           0x60015448D7418C4e70275a5aA2340086A9f8Dd01
+Private Key:     0x3f5d84191f172800677da32d4897e048404cfeb23c2c360edaa4341464d43b1c
+
+BloodTracker:    0xAD02838C74214EE9FD253b678c489a7885527f1C
+BloodDonation:   0x02f2Ad3c32374c98DD52747a8cf825907CbDe794
+BloodDerivative: 0x8Cdd7b2Fa65D5c5EbadCf660821d4150559c42bb
+
+Deployment:      2026-01-16
+Compiler:        Solidity 0.8.20 (optimizer: 1000 runs)
+
+################################################################################
+# END OF FILE
+################################################################################
