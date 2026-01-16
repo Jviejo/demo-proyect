@@ -73,3 +73,6 @@ anvil-state.json
 # Scripts temporales
 build.ps1
 powershell-build.log
+
+# Docker build artifacts
+docker-build/standalone/
