@@ -84,12 +84,37 @@ function Hospital() {
         try {
             const arrPurchases: PurchaseInfo[] = []
 
-            // 1. Obtener compras de BloodDonation (bolsas completas)
-            const donationTransfers = await contractDonation.getPastEvents('Transfer', {
-                filter: { to: account },
-                fromBlock: 0,
-                toBlock: 'latest'
-            })
+            // Obtener el bloque actual
+            const latestBlock = Number(await web3.eth.getBlockNumber())
+
+            // Besu tiene un límite de rango, así que consultamos en chunks
+            const CHUNK_SIZE = 1000
+
+            // Calcular el bloque de inicio (últimos 10000 bloques o desde 0)
+            const startBlock = Math.max(0, latestBlock - 10000)
+
+            console.log(`Hospital: Querying from block ${startBlock} to ${latestBlock}`)
+
+            // 1. Obtener compras de BloodDonation (bolsas completas) en chunks
+            const allDonationTransfers: any[] = []
+
+            for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                try {
+                    const events = await contractDonation.getPastEvents('Transfer', {
+                        filter: { to: account },
+                        fromBlock,
+                        toBlock
+                    })
+                    allDonationTransfers.push(...events)
+                } catch (chunkError) {
+                    console.error(`Error fetching donation chunk ${fromBlock}-${toBlock}:`, chunkError)
+                }
+            }
+
+            const donationTransfers = allDonationTransfers
+            console.log(`Hospital: Found ${donationTransfers.length} donation transfers`)
 
             for (const event of donationTransfers) {
                 const tokenId = Number(event.returnValues.tokenId)
@@ -121,12 +146,26 @@ function Hospital() {
                 }
             }
 
-            // 2. Obtener compras de BloodDerivative (derivados)
-            const derivativeTransfers = await contractDerivative.getPastEvents('Transfer', {
-                filter: { to: account },
-                fromBlock: 0,
-                toBlock: 'latest'
-            })
+            // 2. Obtener compras de BloodDerivative (derivados) en chunks
+            const allDerivativeTransfers: any[] = []
+
+            for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                try {
+                    const events = await contractDerivative.getPastEvents('Transfer', {
+                        filter: { to: account },
+                        fromBlock,
+                        toBlock
+                    })
+                    allDerivativeTransfers.push(...events)
+                } catch (chunkError) {
+                    console.error(`Error fetching derivative chunk ${fromBlock}-${toBlock}:`, chunkError)
+                }
+            }
+
+            const derivativeTransfers = allDerivativeTransfers
+            console.log(`Hospital: Found ${derivativeTransfers.length} derivative transfers`)
 
             for (const event of derivativeTransfers) {
                 const tokenId = Number(event.returnValues.tokenId)
@@ -175,21 +214,43 @@ function Hospital() {
 
     // Obtener inventario actual del hospital
     async function fetchInventory() {
-        if (!contractDonation || !contractDerivative || !contractTracker || !account) return []
+        if (!contractDonation || !contractDerivative || !contractTracker || !account || !web3) return []
 
         try {
             const items: InventoryItem[] = []
+
+            // Obtener el bloque actual
+            const latestBlock = Number(await web3.eth.getBlockNumber())
+
+            // Besu tiene un límite de rango, así que consultamos en chunks
+            const CHUNK_SIZE = 1000
+
+            // Calcular el bloque de inicio (últimos 10000 bloques o desde 0)
+            const startBlock = Math.max(0, latestBlock - 10000)
 
             // 1. Obtener bolsas de sangre completas
             const bloodBagBalance = Number(await contractDonation.methods.balanceOf(account).call())
 
             if (bloodBagBalance > 0) {
-                // Obtener todos los tokens del hospital
-                const allDonationTransfers = await contractDonation.getPastEvents('Transfer', {
-                    filter: { to: account },
-                    fromBlock: 0,
-                    toBlock: 'latest'
-                })
+                // Obtener todos los tokens del hospital en chunks
+                const allDonationTransfersRaw: any[] = []
+
+                for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                    const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                    try {
+                        const events = await contractDonation.getPastEvents('Transfer', {
+                            filter: { to: account },
+                            fromBlock,
+                            toBlock
+                        })
+                        allDonationTransfersRaw.push(...events)
+                    } catch (chunkError) {
+                        console.error(`Error fetching donation inventory chunk ${fromBlock}-${toBlock}:`, chunkError)
+                    }
+                }
+
+                const allDonationTransfers = allDonationTransfersRaw
 
                 for (const event of allDonationTransfers) {
                     const tokenId = Number(event.returnValues.tokenId)
@@ -221,11 +282,24 @@ function Hospital() {
             const derivativeBalance = Number(await contractDerivative.methods.balanceOf(account).call())
 
             if (derivativeBalance > 0) {
-                const allDerivativeTransfers = await contractDerivative.getPastEvents('Transfer', {
-                    filter: { to: account },
-                    fromBlock: 0,
-                    toBlock: 'latest'
-                })
+                const allDerivativeTransfersRaw: any[] = []
+
+                for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                    const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                    try {
+                        const events = await contractDerivative.getPastEvents('Transfer', {
+                            filter: { to: account },
+                            fromBlock,
+                            toBlock
+                        })
+                        allDerivativeTransfersRaw.push(...events)
+                    } catch (chunkError) {
+                        console.error(`Error fetching derivative inventory chunk ${fromBlock}-${toBlock}:`, chunkError)
+                    }
+                }
+
+                const allDerivativeTransfers = allDerivativeTransfersRaw
 
                 for (const event of allDerivativeTransfers) {
                     const tokenId = Number(event.returnValues.tokenId)

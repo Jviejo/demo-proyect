@@ -67,12 +67,37 @@ function Trader() {
         try {
             const arrPurchases: PurchaseInfo[] = []
 
-            // Obtener todos los eventos Transfer del contrato de derivados
-            const transferEventsDerivative = await contractDerivative.getPastEvents('Transfer', {
-                filter: { to: account },
-                fromBlock: 0,
-                toBlock: 'latest'
-            })
+            // Obtener el bloque actual
+            const latestBlock = Number(await web3.eth.getBlockNumber())
+
+            // Besu tiene un límite de rango, así que consultamos en chunks
+            const CHUNK_SIZE = 1000
+            const allEventsDerivative: any[] = []
+
+            // Calcular el bloque de inicio (últimos 10000 bloques o desde 0)
+            const startBlock = Math.max(0, latestBlock - 10000)
+
+            console.log(`Trader: Querying derivative transfers from block ${startBlock} to ${latestBlock}`)
+
+            // Obtener eventos Transfer de derivados en chunks
+            for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                try {
+                    const events = await contractDerivative.getPastEvents('Transfer', {
+                        filter: { to: account },
+                        fromBlock,
+                        toBlock
+                    })
+                    allEventsDerivative.push(...events)
+                    console.log(`Trader: Found ${events.length} derivative transfer events in chunk ${fromBlock}-${toBlock}`)
+                } catch (chunkError) {
+                    console.error(`Error fetching derivative chunk ${fromBlock}-${toBlock}:`, chunkError)
+                }
+            }
+
+            const transferEventsDerivative = allEventsDerivative
+            console.log(`Trader: Found ${transferEventsDerivative.length} total derivative transfer events`)
 
             // Procesar transferencias de derivados
             for (const event of transferEventsDerivative) {
@@ -114,11 +139,29 @@ function Trader() {
 
             // Obtener eventos del contrato de donaciones (bolsas completas)
             if (contractDonation) {
-                const transferEventsDonation = await contractDonation.getPastEvents('Transfer', {
-                    filter: { to: account },
-                    fromBlock: 0,
-                    toBlock: 'latest'
-                })
+                const allEventsDonation: any[] = []
+
+                console.log(`Trader: Querying donation transfers from block ${startBlock} to ${latestBlock}`)
+
+                // Obtener eventos Transfer de bolsas completas en chunks
+                for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                    const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                    try {
+                        const events = await contractDonation.getPastEvents('Transfer', {
+                            filter: { to: account },
+                            fromBlock,
+                            toBlock
+                        })
+                        allEventsDonation.push(...events)
+                        console.log(`Trader: Found ${events.length} donation transfer events in chunk ${fromBlock}-${toBlock}`)
+                    } catch (chunkError) {
+                        console.error(`Error fetching donation chunk ${fromBlock}-${toBlock}:`, chunkError)
+                    }
+                }
+
+                const transferEventsDonation = allEventsDonation
+                console.log(`Trader: Found ${transferEventsDonation.length} total donation transfer events`)
 
                 // Procesar transferencias de bolsas completas
                 for (const event of transferEventsDonation) {

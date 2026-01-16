@@ -82,12 +82,37 @@ function Manufacturer() {
         try {
             const arrPurchases: PurchaseInfo[] = []
 
-            // Obtener compras de BloodDerivative
-            const derivativeTransfers = await contractDerivative.getPastEvents('Transfer', {
-                filter: { to: account },
-                fromBlock: 0,
-                toBlock: 'latest'
-            })
+            // Obtener el bloque actual
+            const latestBlock = Number(await web3.eth.getBlockNumber())
+
+            // Besu tiene un límite de rango, así que consultamos en chunks
+            const CHUNK_SIZE = 1000
+
+            // Calcular el bloque de inicio (últimos 10000 bloques o desde 0)
+            const startBlock = Math.max(0, latestBlock - 10000)
+
+            console.log(`Manufacturer: Querying derivative transfers from block ${startBlock} to ${latestBlock}`)
+
+            // Obtener compras de BloodDerivative en chunks
+            const allDerivativeTransfers: any[] = []
+
+            for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                try {
+                    const events = await contractDerivative.getPastEvents('Transfer', {
+                        filter: { to: account },
+                        fromBlock,
+                        toBlock
+                    })
+                    allDerivativeTransfers.push(...events)
+                } catch (chunkError) {
+                    console.error(`Error fetching derivative chunk ${fromBlock}-${toBlock}:`, chunkError)
+                }
+            }
+
+            const derivativeTransfers = allDerivativeTransfers
+            console.log(`Manufacturer: Found ${derivativeTransfers.length} derivative transfers`)
 
             for (const event of derivativeTransfers) {
                 const tokenId = Number(event.returnValues.tokenId)
@@ -140,15 +165,37 @@ function Manufacturer() {
         try {
             const items: InventoryItem[] = []
 
+            // Obtener el bloque actual
+            const latestBlock = Number(await web3.eth.getBlockNumber())
+
+            // Besu tiene un límite de rango, así que consultamos en chunks
+            const CHUNK_SIZE = 1000
+
+            // Calcular el bloque de inicio (últimos 10000 bloques o desde 0)
+            const startBlock = Math.max(0, latestBlock - 10000)
+
             // Obtener balance de derivados
             const derivativeBalance = Number(await contractDerivative.methods.balanceOf(account).call())
 
             if (derivativeBalance > 0) {
-                const allDerivativeTransfers = await contractDerivative.getPastEvents('Transfer', {
-                    filter: { to: account },
-                    fromBlock: 0,
-                    toBlock: 'latest'
-                })
+                const allDerivativeTransfersRaw: any[] = []
+
+                for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                    const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                    try {
+                        const events = await contractDerivative.getPastEvents('Transfer', {
+                            filter: { to: account },
+                            fromBlock,
+                            toBlock
+                        })
+                        allDerivativeTransfersRaw.push(...events)
+                    } catch (chunkError) {
+                        console.error(`Error fetching derivative inventory chunk ${fromBlock}-${toBlock}:`, chunkError)
+                    }
+                }
+
+                const allDerivativeTransfers = allDerivativeTransfersRaw
 
                 for (const event of allDerivativeTransfers) {
                     const tokenId = Number(event.returnValues.tokenId)

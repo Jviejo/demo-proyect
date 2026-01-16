@@ -92,19 +92,46 @@ function DonationCenter() {
         try {
             const arrDonations: DonationInfo[] = []
 
-            // Obtener DIRECTAMENTE los eventos Donation del BloodTracker filtrados por este centro
-            // Esto es MUCHO más eficiente que el método anterior
-            const donationEvents = await contractTracker.getPastEvents('Donation', {
-                filter: { center: account },
-                fromBlock: 0,
-                toBlock: 'latest'
-            })
+            // Obtener el bloque actual
+            const latestBlock = Number(await web3.eth.getBlockNumber())
+            console.log('Latest block:', latestBlock)
 
+            // Besu tiene un límite de rango, así que consultamos en chunks
+            const CHUNK_SIZE = 1000 // Bloques por chunk
+            const allEvents: any[] = []
+
+            // Calcular el bloque de inicio (últimos 10000 bloques o desde 0)
+            const startBlock = Math.max(0, latestBlock - 10000)
+
+            console.log(`Querying donation events from block ${startBlock} to ${latestBlock}`)
+
+            for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                try {
+                    console.log(`Fetching donation events from block ${fromBlock} to ${toBlock}`)
+                    const events = await contractTracker.getPastEvents('Donation', {
+                        filter: { center: account },
+                        fromBlock,
+                        toBlock
+                    })
+                    allEvents.push(...events)
+                    console.log(`Found ${events.length} events in this chunk`)
+                } catch (chunkError) {
+                    console.error(`Error fetching chunk ${fromBlock}-${toBlock}:`, chunkError)
+                    // Continuar con el siguiente chunk
+                }
+            }
+
+            const donationEvents = allEvents
             console.log(`Found ${donationEvents.length} donations for center ${account}`)
 
             // Obtener info del centro UNA SOLA VEZ (fuera del loop)
             const centerInfo = await contractTracker.methods.companies(account).call()
             const centerLocation = String(centerInfo.location)
+
+            // Cache para evitar consultar el mismo bloque múltiples veces
+            const blockCache = new Map<string, any>()
 
             // Para cada evento, extraer la información necesaria
             for (const event of donationEvents) {
@@ -112,8 +139,12 @@ function DonationCenter() {
                 const donorAddress = String(event.returnValues.donor)
 
                 try {
-                    // Obtener el timestamp del bloque
-                    const block = await web3.eth.getBlock(event.blockHash)
+                    // Obtener timestamp del bloque (con caché)
+                    let block = blockCache.get(event.blockHash)
+                    if (!block) {
+                        block = await web3.eth.getBlock(event.blockHash)
+                        blockCache.set(event.blockHash, block)
+                    }
                     const timestamp = new Date(Number(block.timestamp) * 1000)
 
                     // Simular tipo de sangre basado en tokenId (en producción vendría de metadata)
@@ -284,17 +315,38 @@ function DonationCenter() {
 
     // Obtener lista de laboratorios registrados
     async function fetchLaboratories() {
-        if (!contractTracker) return []
+        if (!contractTracker || !web3) return []
 
         try {
             console.log('Buscando laboratorios registrados...')
 
-            // Obtener eventos de registro aprobado para laboratorios
-            const approvalEvents = await contractTracker.getPastEvents('RequestApproved', {
-                fromBlock: 0,
-                toBlock: 'latest'
-            })
+            // Obtener el bloque actual
+            const latestBlock = Number(await web3.eth.getBlockNumber())
 
+            // Besu tiene un límite de rango, así que consultamos en chunks
+            const CHUNK_SIZE = 1000
+            const allEvents: any[] = []
+
+            // Calcular el bloque de inicio (últimos 10000 bloques o desde 0)
+            const startBlock = Math.max(0, latestBlock - 10000)
+
+            console.log(`Querying approval events from block ${startBlock} to ${latestBlock}`)
+
+            for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                try {
+                    const events = await contractTracker.getPastEvents('RequestApproved', {
+                        fromBlock,
+                        toBlock
+                    })
+                    allEvents.push(...events)
+                } catch (chunkError) {
+                    console.error(`Error fetching approval chunk ${fromBlock}-${toBlock}:`, chunkError)
+                }
+            }
+
+            const approvalEvents = allEvents
             console.log(`Found ${approvalEvents.length} RequestApproved events`)
 
             const labs: Laboratory[] = []

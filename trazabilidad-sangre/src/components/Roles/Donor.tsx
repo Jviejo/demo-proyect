@@ -57,14 +57,37 @@ function Donor() {
         try {
             const arrDonations: DonationInfo[] = []
 
-            // Obtener todos los eventos Donation del BloodTracker donde 'donor' es el donante
-            const donationEvents = await contractTracker.getPastEvents('Donation', {
-                filter: { donor: account },
-                fromBlock: 0,
-                toBlock: 'latest'
-            })
+            // Obtener el bloque actual
+            const latestBlock = Number(await web3.eth.getBlockNumber())
 
-            console.log(`Found ${donationEvents.length} donation events for ${account}`)
+            // Besu tiene un límite de rango, así que consultamos en chunks
+            const CHUNK_SIZE = 1000
+
+            // Calcular el bloque de inicio (últimos 10000 bloques o desde 0)
+            const startBlock = Math.max(0, latestBlock - 10000)
+
+            console.log(`Donor: Querying donation events from block ${startBlock} to ${latestBlock}`)
+
+            // Obtener todos los eventos Donation del BloodTracker donde 'donor' es el donante en chunks
+            const allDonationEvents: any[] = []
+
+            for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                try {
+                    const events = await contractTracker.getPastEvents('Donation', {
+                        filter: { donor: account },
+                        fromBlock,
+                        toBlock
+                    })
+                    allDonationEvents.push(...events)
+                } catch (chunkError) {
+                    console.error(`Error fetching donation chunk ${fromBlock}-${toBlock}:`, chunkError)
+                }
+            }
+
+            const donationEvents = allDonationEvents
+            console.log(`Donor: Found ${donationEvents.length} donation events for ${account}`)
 
             // Para cada evento Donation, obtener los detalles completos
             for (const event of donationEvents) {
