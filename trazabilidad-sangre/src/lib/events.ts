@@ -115,13 +115,32 @@ export async function getProcesses(address: string) {
  */
 export async function getEventsFromDonation(tokenId: number) {
     const { contractDonation } = getContracts();
-    if (!contractDonation) return [];
+    if (!contractDonation) {
+        console.log('getEventsFromDonation: No contract available')
+        return [];
+    }
 
-    const events = await contractDonation.getPastEvents('Transfer', {
-        filter: { tokenId: tokenId },
-        fromBlock: process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK,
+    console.log(`getEventsFromDonation: Fetching events for tokenId ${tokenId}`)
+
+    // Validar fromBlock
+    const fromBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+    const validFromBlock = isNaN(fromBlock) ? 0 : fromBlock
+
+    // Obtener TODOS los eventos Transfer (no podemos filtrar por tokenId porque no está indexado)
+    const allEvents = await contractDonation.getPastEvents('Transfer', {
+        fromBlock: validFromBlock,
         toBlock: 'latest'
     }) as TransferEventLog[]
+
+    console.log(`getEventsFromDonation: Found ${allEvents.length} total Transfer events`)
+
+    // Filtrar manualmente por tokenId
+    const events = allEvents.filter(event => {
+        const eventTokenId = Number(event.returnValues.tokenId)
+        return eventTokenId === tokenId
+    })
+
+    console.log(`getEventsFromDonation: Filtered to ${events.length} events for tokenId ${tokenId}`)
 
     return formatEvent(events)
 }
@@ -131,15 +150,38 @@ export async function getEventsFromDonation(tokenId: number) {
  * @param tokenId Id del token que se desea la traza. Puede ser de una donación o un derivado
  * @returns Traza completa del evento Transfer
  */
-export async function getEventsFromDerivative(tokenId: number, fromBlock: number = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK)) {
+export async function getEventsFromDerivative(tokenId: number, fromBlock: number = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0) {
     const { contractDerivative } = getContracts();
     if (!contractDerivative) return [];
 
-    const events = await contractDerivative.getPastEvents('Transfer', {
-        filter: { tokenId: tokenId },
-        fromBlock: fromBlock,
+    // Convertir a número si viene como BigInt
+    const tokenIdNum = typeof tokenId === 'bigint' ? Number(tokenId) : tokenId
+
+    // Validar que tokenId sea un número válido
+    if (tokenIdNum === null || tokenIdNum === undefined || isNaN(tokenIdNum)) {
+        console.error('getEventsFromDerivative: Invalid tokenId', tokenId);
+        return [];
+    }
+
+    // Validar que fromBlock sea un número válido
+    const validFromBlock = (fromBlock === null || fromBlock === undefined || isNaN(fromBlock)) ? 0 : fromBlock
+
+    console.log(`getEventsFromDerivative: Fetching events for tokenId ${tokenIdNum} from block ${validFromBlock}`)
+
+    // Obtener TODOS los eventos Transfer (no podemos filtrar por tokenId porque no está indexado)
+    const allEvents = await contractDerivative.getPastEvents('Transfer', {
+        fromBlock: validFromBlock,
         toBlock: 'latest'
     }) as TransferEventLog[]
+
+    console.log(`getEventsFromDerivative: Found ${allEvents.length} total Transfer events`)
+
+    // Filtrar manualmente por tokenId
+    const events = allEvents.filter(event => {
+        return Number(event.returnValues.tokenId) === tokenIdNum
+    })
+
+    console.log(`getEventsFromDerivative: Filtered to ${events.length} events for tokenId ${tokenIdNum}`)
 
     return formatEvent(events)
 }
