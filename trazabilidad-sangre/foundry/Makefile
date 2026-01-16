@@ -1,8 +1,11 @@
 -include .anvil-env
+-include .env
+export
 
 ARGS ?= "Dodot", "Madrid", 1
 WALLET ?= ""
 REQUEST_ID ?= 1
+NUM_DONORS ?= 50
 
 # Deployment con admin (nuevo sistema de aprobación)
 deploy-anvil-admin:;
@@ -39,5 +42,14 @@ test-approval:;
 
 test-all:;
 	forge test -vv
+
+# Seed Data - Generar datos de prueba
+seed-data-anvil:;
+	@echo "Generando datos de prueba en Anvil..."
+	forge script script/SeedData.s.sol:SeedData --rpc-url $(ANVIL_RPC_URL) --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast -vvvv
+
+seed-data-tsc:;
+	@echo "Generando datos de prueba en Trias Testnet..."
+	forge script script/SeedData.s.sol:SeedData --legacy --rpc-url $(TRIAS_RPC_URL) --account trias-testnet --password-file .password --broadcast -vvvv
 
 
