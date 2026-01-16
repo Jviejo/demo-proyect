@@ -22,7 +22,26 @@
       "Bash(npx playwright test:*)",
       "Bash(npx playwright install:*)",
       "Skill(frontend-design)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(forge build:*)",
+      "Bash(forge test:*)",
+      "Bash(make deploy-anvil-admin:*)",
+      "Bash(export INITIAL_ADMIN_ADDRESS=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "Bash(lsof:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(cast balance:*)",
+      "Bash(awk:*)",
+      "Bash(node -e:*)",
+      "Bash(pgrep:*)",
+      "Bash(tasklist:*)",
+      "Bash(test:*)",
+      "Bash(cast block-number:*)",
+      "Bash(ANVIL_RPC_URL=http://localhost:8545 INITIAL_ADMIN_ADDRESS=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 forge script:*)",
+      "Bash(grep:*)",
+      "Bash(make seed-data-tsc:*)"
     ]
   }
 }
