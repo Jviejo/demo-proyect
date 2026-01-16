@@ -92,25 +92,56 @@ export default function TracePage() {
         try {
             console.log('Fetching donations from BloodTracker...')
 
-            // Obtener TODOS los eventos Donation del BloodTracker (mucho más eficiente)
-            const donationEvents = await contractTracker.getPastEvents('Donation', {
-                fromBlock: 0,
-                toBlock: 'latest'
-            })
+            // Obtener el bloque actual
+            const latestBlock = Number(await web3.eth.getBlockNumber())
+            console.log('Latest block:', latestBlock)
 
-            console.log(`Found ${donationEvents.length} donation events`)
+            // Besu tiene un límite de rango, así que consultamos en chunks
+            const CHUNK_SIZE = 1000 // Bloques por chunk
+            const allEvents: any[] = []
+
+            // Calcular el bloque de inicio (últimos 10000 bloques o desde 0)
+            const startBlock = Math.max(0, latestBlock - 10000)
+
+            console.log(`Querying events from block ${startBlock} to ${latestBlock}`)
+
+            for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+                const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+                try {
+                    console.log(`Fetching events from block ${fromBlock} to ${toBlock}`)
+                    const events = await contractTracker.getPastEvents('Donation', {
+                        fromBlock,
+                        toBlock
+                    })
+                    allEvents.push(...events)
+                    console.log(`Found ${events.length} events in this chunk`)
+                } catch (chunkError) {
+                    console.error(`Error fetching chunk ${fromBlock}-${toBlock}:`, chunkError)
+                    // Continuar con el siguiente chunk
+                }
+            }
+
+            console.log(`Found ${allEvents.length} total donation events`)
+
+            // Cache para evitar consultar el mismo bloque múltiples veces
+            const blockCache = new Map<string, any>()
 
             const donationsArr: DonationData[] = []
 
-            for (const event of donationEvents) {
+            for (const event of allEvents) {
                 try {
                     const tokenId = Number(event.returnValues.tokenId)
                     const donorAddress = String(event.returnValues.donor)
                     const centerAddress = String(event.returnValues.center)
                     const blockNumber = Number(event.blockNumber)
 
-                    // Obtener timestamp del bloque
-                    const block = await web3.eth.getBlock(event.blockHash)
+                    // Obtener timestamp del bloque (con caché)
+                    let block = blockCache.get(event.blockHash)
+                    if (!block) {
+                        block = await web3.eth.getBlock(event.blockHash)
+                        blockCache.set(event.blockHash, block)
+                    }
                     const timestamp = Number(block.timestamp)
 
                     donationsArr.push({
@@ -120,6 +151,11 @@ export default function TracePage() {
                         timestamp: timestamp,
                         blockNumber
                     })
+
+                    // Log de progreso cada 50 donaciones
+                    if (donationsArr.length % 50 === 0) {
+                        console.log(`Processed ${donationsArr.length}/${allEvents.length} donations...`)
+                    }
                 } catch (error) {
                     console.error(`Error processing donation event:`, error)
                 }
