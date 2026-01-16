@@ -3,7 +3,6 @@
 import { useWallet } from "../ConnectWalletButton"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { getTraceFromDonation } from "@/lib/events"
 import { motion } from "framer-motion"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from "recharts"
 import { Card } from "../ui/Card"
@@ -24,6 +23,9 @@ interface DonationInfo {
     donorAddress: string
     bloodType: string
     location: string
+    currentOwner?: string
+    ownerName?: string
+    isOwned?: boolean
 }
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
@@ -46,15 +48,14 @@ const navigationCards = [
         icon: "🔍",
         path: "/trace",
         gradient: "from-blockchain-500 to-blockchain-700"
-    },
-    {
-        name: "Marketplace",
-        description: "Ver derivados disponibles",
-        icon: "🛒",
-        path: "/marketplace",
-        gradient: "from-medical-500 to-medical-700"
     }
 ]
+
+interface Laboratory {
+    address: string
+    name: string
+    location: string
+}
 
 function DonationCenter() {
     const { account, web3, contractTracker, contractDonation } = useWallet()
@@ -64,6 +65,11 @@ function DonationCenter() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [showConfirmModal, setShowConfirmModal] = useState(false)
+    const [showTransferModal, setShowTransferModal] = useState(false)
+    const [selectedDonationId, setSelectedDonationId] = useState<number | null>(null)
+    const [laboratories, setLaboratories] = useState<Laboratory[]>([])
+    const [selectedLab, setSelectedLab] = useState<string>("")
+    const [isTransferring, setIsTransferring] = useState(false)
     const [stats, setStats] = useState({
         today: 0,
         thisMonth: 0,
@@ -81,53 +87,80 @@ function DonationCenter() {
 
     // Obtener donaciones realizadas por este centro
     async function fetchDonations() {
-        if (!contractDonation || !account) return []
+        if (!contractTracker || !account || !web3 || !contractDonation) return []
 
         try {
             const arrDonations: DonationInfo[] = []
 
-            // Obtener todos los eventos Transfer del contrato BloodDonation
-            // donde 'from' es address(0) (mint) y podemos identificar que fue este centro
-            const transferEvents = await contractDonation.getPastEvents('Transfer', {
-                filter: { from: '0x0000000000000000000000000000000000000000' },
+            // Obtener DIRECTAMENTE los eventos Donation del BloodTracker filtrados por este centro
+            // Esto es MUCHO más eficiente que el método anterior
+            const donationEvents = await contractTracker.getPastEvents('Donation', {
+                filter: { center: account },
                 fromBlock: 0,
                 toBlock: 'latest'
             })
 
-            // Para cada evento, verificar si el centro actual lo creó
-            for (const event of transferEvents) {
+            console.log(`Found ${donationEvents.length} donations for center ${account}`)
+
+            // Obtener info del centro UNA SOLA VEZ (fuera del loop)
+            const centerInfo = await contractTracker.methods.companies(account).call()
+            const centerLocation = String(centerInfo.location)
+
+            // Para cada evento, extraer la información necesaria
+            for (const event of donationEvents) {
                 const tokenId = Number(event.returnValues.tokenId)
-                const donorAddress = String(event.returnValues.to)
+                const donorAddress = String(event.returnValues.donor)
 
                 try {
-                    const { donationTrace } = await getTraceFromDonation(tokenId)
+                    // Obtener el timestamp del bloque
+                    const block = await web3.eth.getBlock(event.blockHash)
+                    const timestamp = new Date(Number(block.timestamp) * 1000)
 
-                    if (donationTrace && donationTrace.trace.length > 0) {
-                        const donationEvent = donationTrace.trace[0]
+                    // Simular tipo de sangre basado en tokenId (en producción vendría de metadata)
+                    const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+                    const bloodType = bloodTypes[tokenId % bloodTypes.length]
 
-                        // Verificar si este centro fue quien registró la donación
-                        if (web3!.utils.toChecksumAddress(donationEvent.owner) === web3!.utils.toChecksumAddress(account)) {
-                            // Simular tipo de sangre basado en tokenId (en producción vendría de metadata)
-                            const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-                            const bloodType = bloodTypes[tokenId % bloodTypes.length]
+                    // Verificar el owner actual del NFT
+                    let currentOwner = ''
+                    let ownerName = ''
+                    let isOwned = false
 
-                            arrDonations.push({
-                                tokenId,
-                                donationDate: donationEvent.timestamp,
-                                donorAddress: donorAddress,
-                                bloodType,
-                                location: donationEvent.location
-                            })
+                    try {
+                        currentOwner = await contractDonation.methods.ownerOf(tokenId).call()
+                        isOwned = web3.utils.toChecksumAddress(currentOwner) === web3.utils.toChecksumAddress(account)
+
+                        // Si no es del centro, obtener info del owner
+                        if (!isOwned) {
+                            const ownerCompany = await contractTracker.methods.companies(currentOwner).call()
+                            ownerName = String(ownerCompany.name) || 'Desconocido'
                         }
+                    } catch (error) {
+                        // El NFT fue quemado (procesado)
+                        console.log(`NFT ${tokenId} was burned (processed)`)
+                        currentOwner = 'BURNED'
+                        ownerName = 'Procesado'
+                        isOwned = false
                     }
+
+                    arrDonations.push({
+                        tokenId,
+                        donationDate: timestamp,
+                        donorAddress: donorAddress,
+                        bloodType,
+                        location: centerLocation,
+                        currentOwner,
+                        ownerName,
+                        isOwned
+                    })
                 } catch (error) {
-                    // Ignorar errores de tokens individuales
-                    console.error(`Error processing token ${tokenId}:`, error)
+                    console.error(`Error processing donation ${tokenId}:`, error)
                 }
             }
 
-            // Ordenar por fecha descendente
-            arrDonations.sort((a, b) => b.donationDate.getTime() - a.donationDate.getTime())
+            // Ordenar por tokenId descendente (más reciente primero)
+            arrDonations.sort((a, b) => b.tokenId - a.tokenId)
+
+            console.log(`Processed ${arrDonations.length} donations successfully`)
 
             return arrDonations
         } catch (error) {
@@ -208,10 +241,22 @@ function DonationCenter() {
             }
 
             // Registrar donación en el contrato BloodTracker
-            const minDonationFee = await contractTracker.methods.MINIMUM_DONATION_FEE().call()
+            const minDonationFee = await contractTracker.methods.getMinimumDonationFee().call()
+
+            // VALIDACIÓN: Verificar si el donante ya tiene un rol de empresa
+            const donorCompany = await contractTracker.methods.companies(formData.donorAddress).call()
+            const donorCompanyRole = Number(donorCompany.role)
+
+            if (donorCompanyRole !== 0) {
+                showTransactionError({
+                    message: "Esta wallet ya está registrada como empresa. Una empresa no puede donar sangre."
+                })
+                setIsSubmitting(false)
+                return
+            }
 
             const receipt = await contractTracker.methods
-                .registerDonation(formData.donorAddress)
+                .donate(formData.donorAddress)
                 .send({
                     from: account,
                     value: minDonationFee,
@@ -237,6 +282,101 @@ function DonationCenter() {
         }
     }
 
+    // Obtener lista de laboratorios registrados
+    async function fetchLaboratories() {
+        if (!contractTracker) return []
+
+        try {
+            console.log('Buscando laboratorios registrados...')
+
+            // Obtener eventos de registro aprobado para laboratorios
+            const approvalEvents = await contractTracker.getPastEvents('RequestApproved', {
+                fromBlock: 0,
+                toBlock: 'latest'
+            })
+
+            console.log(`Found ${approvalEvents.length} RequestApproved events`)
+
+            const labs: Laboratory[] = []
+
+            for (const event of approvalEvents) {
+                const applicant = String(event.returnValues.applicant)
+                const role = Number(event.returnValues.role)
+
+                console.log(`Event: applicant=${applicant}, role=${role}`)
+
+                // Solo laboratorios (Role.LABORATORY = 2)
+                if (role === 2) {
+                    const company = await contractTracker.methods.companies(applicant).call()
+                    const companyStatus = Number(company.status)
+
+                    console.log(`Laboratory found: ${company.name}, status=${companyStatus}`)
+
+                    // Solo agregar si está aprobado (status = 2)
+                    if (companyStatus === 2) {
+                        labs.push({
+                            address: applicant,
+                            name: String(company.name),
+                            location: String(company.location)
+                        })
+                    }
+                }
+            }
+
+            console.log(`Total laboratories approved: ${labs.length}`, labs)
+
+            setLaboratories(labs)
+            return labs
+        } catch (error) {
+            console.error("Error fetching laboratories:", error)
+            return []
+        }
+    }
+
+    // Manejar click en transferir
+    function handleTransferClick(tokenId: number) {
+        setSelectedDonationId(tokenId)
+        setShowTransferModal(true)
+    }
+
+    // Confirmar transferencia
+    async function handleConfirmTransfer() {
+        if (!selectedLab || !selectedDonationId || !contractDonation || !account) {
+            showTransactionError({ message: "Selecciona un laboratorio" })
+            return
+        }
+
+        setShowTransferModal(false)
+        setIsTransferring(true)
+
+        const toastId = showTransactionPending()
+
+        try {
+            // Transferir el NFT usando safeTransferFrom
+            const receipt = await contractDonation.methods
+                .safeTransferFrom(account, selectedLab, selectedDonationId)
+                .send({
+                    from: account,
+                    gas: 300000
+                })
+
+            showTransactionSuccess(receipt.transactionHash)
+            showGenericSuccess('Donación transferida exitosamente al laboratorio')
+
+            // Limpiar selección
+            setSelectedLab("")
+            setSelectedDonationId(null)
+
+            // Recargar datos
+            await loadData()
+        } catch (error: any) {
+            console.error('Error transferring donation:', error)
+            showTransactionError(error)
+        } finally {
+            setIsTransferring(false)
+        }
+    }
+
     // Cargar datos
     async function loadData() {
         setIsLoading(true)
@@ -248,6 +388,9 @@ function DonationCenter() {
                 const donationsData = await fetchDonations()
                 setDonations(donationsData)
                 calculateStats(donationsData)
+
+                // Cargar laboratorios para transferencias
+                await fetchLaboratories()
             }
         } catch (error) {
             console.error("Error loading donation center data:", error)
@@ -287,30 +430,9 @@ function DonationCenter() {
             >
                 <Card variant="elevated" className="mb-6">
                     <div className="p-6">
-                        <div className="flex items-center justify-between flex-wrap gap-4">
-                            <div>
-                                <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                                    Dashboard Centro de Donación
-                                </h1>
-                                <div className="flex items-center gap-4 text-slate-600">
-                                    <Tooltip content={account || ''}>
-                                        <span className="flex items-center gap-2">
-                                            <span className="font-semibold">Dirección:</span>
-                                            <code className="px-2 py-1 bg-slate-100 rounded text-sm">
-                                                {truncateAddress(account || '', 8, 6)}
-                                            </code>
-                                        </span>
-                                    </Tooltip>
-                                    <span className="flex items-center gap-2">
-                                        <span className="font-semibold">Balance:</span>
-                                        <span className="text-success-600 font-bold">{balance} TAS</span>
-                                    </span>
-                                </div>
-                            </div>
-                            <Badge status="completed" variant="solid">
-                                Centro Activo
-                            </Badge>
-                        </div>
+                        <h1 className="text-3xl font-bold text-slate-900">
+                            Dashboard Centro de Donación
+                        </h1>
                     </div>
                 </Card>
             </motion.div>
@@ -467,33 +589,48 @@ function DonationCenter() {
                                 <h2 className="text-2xl font-bold text-slate-900 mb-6">
                                     Distribución por Tipo de Sangre
                                 </h2>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <PieChart>
-                                        <Pie
-                                            data={bloodTypeChartData}
-                                            cx="50%"
-                                            cy="50%"
-                                            labelLine={false}
-                                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                            outerRadius={100}
-                                            fill="#8884d8"
-                                            dataKey="value"
-                                        >
-                                            {bloodTypeChartData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <RechartsTooltip
-                                            contentStyle={{
-                                                backgroundColor: 'white',
-                                                border: '1px solid #E5E7EB',
-                                                borderRadius: '8px',
-                                                padding: '12px'
-                                            }}
-                                        />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
+
+                                {/* Estadísticas en formato de tabla */}
+                                <div className="space-y-3">
+                                    {bloodTypeChartData.map((item, index) => {
+                                        const percentage = (item.value / donations.length * 100).toFixed(1)
+                                        return (
+                                            <div key={index} className="flex items-center gap-4">
+                                                <div
+                                                    className="w-4 h-4 rounded-full flex-shrink-0"
+                                                    style={{ backgroundColor: item.color }}
+                                                />
+                                                <div className="flex-1 flex items-center gap-3">
+                                                    <span className="font-bold text-slate-900 w-12">
+                                                        {item.name}
+                                                    </span>
+                                                    <div className="flex-1 bg-slate-100 rounded-full h-8 overflow-hidden">
+                                                        <div
+                                                            className="h-full flex items-center justify-end pr-3 text-xs font-semibold text-white transition-all duration-500"
+                                                            style={{
+                                                                width: `${percentage}%`,
+                                                                backgroundColor: item.color,
+                                                                minWidth: '40px'
+                                                            }}
+                                                        >
+                                                            {percentage}%
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-sm font-semibold text-slate-600 w-12 text-right">
+                                                        {item.value}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+
+                                <div className="mt-6 pt-6 border-t border-slate-200">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm font-semibold text-slate-700">Total</span>
+                                        <span className="text-lg font-bold text-slate-900">{donations.length} donaciones</span>
+                                    </div>
+                                </div>
                             </div>
                         </Card>
                     </motion.div>
@@ -563,21 +700,59 @@ function DonationCenter() {
                                                         <p className="text-sm text-slate-600 mb-1">
                                                             Tipo de Sangre:
                                                         </p>
-                                                        <Badge
-                                                            status="completed"
-                                                            variant="soft"
-                                                            style={{ backgroundColor: BLOOD_TYPE_COLORS[donation.bloodType] + '20' }}
+                                                        <span
+                                                            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold"
+                                                            style={{
+                                                                backgroundColor: BLOOD_TYPE_COLORS[donation.bloodType] + '30',
+                                                                color: BLOOD_TYPE_COLORS[donation.bloodType],
+                                                                border: `2px solid ${BLOOD_TYPE_COLORS[donation.bloodType]}`
+                                                            }}
                                                         >
                                                             {donation.bloodType}
-                                                        </Badge>
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <div className="flex flex-col items-end gap-2">
-                                                <Badge status="completed" variant="solid">
-                                                    Registrada
-                                                </Badge>
+                                                {donation.isOwned ? (
+                                                    <>
+                                                        <Badge status="completed" variant="solid">
+                                                            En Inventario
+                                                        </Badge>
+                                                        <Button
+                                                            variant="secondary"
+                                                            size="sm"
+                                                            onClick={() => handleTransferClick(donation.tokenId)}
+                                                            disabled={isTransferring}
+                                                        >
+                                                            Transferir a Laboratorio
+                                                        </Button>
+                                                    </>
+                                                ) : donation.currentOwner === 'BURNED' ? (
+                                                    <div className="text-right">
+                                                        <Badge status="processing" variant="solid">
+                                                            Procesado
+                                                        </Badge>
+                                                        <p className="text-xs text-slate-500 mt-2">
+                                                            NFT quemado
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-right">
+                                                        <Badge status="pending" variant="solid">
+                                                            Transferida
+                                                        </Badge>
+                                                        <p className="text-xs text-slate-600 mt-2">
+                                                            <span className="font-semibold">A:</span> {donation.ownerName}
+                                                        </p>
+                                                        <Tooltip content={donation.currentOwner || ''}>
+                                                            <code className="text-xs text-slate-500">
+                                                                {truncateAddress(donation.currentOwner || '')}
+                                                            </code>
+                                                        </Tooltip>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -588,7 +763,7 @@ function DonationCenter() {
                 )}
             </motion.div>
 
-            {/* Modal de Confirmación */}
+            {/* Modal de Confirmación - Nueva Donación */}
             <ConfirmModal
                 isOpen={showConfirmModal}
                 onClose={() => setShowConfirmModal(false)}
@@ -608,6 +783,69 @@ function DonationCenter() {
                         </div>
                         <p className="text-xs text-slate-500 mt-4">
                             Esta acción creará una transacción en la blockchain.
+                        </p>
+                    </div>
+                }
+            />
+
+            {/* Modal de Transferencia a Laboratorio */}
+            <ConfirmModal
+                isOpen={showTransferModal}
+                onClose={() => {
+                    setShowTransferModal(false)
+                    setSelectedLab("")
+                    setSelectedDonationId(null)
+                }}
+                onConfirm={handleConfirmTransfer}
+                title="Transferir Donación a Laboratorio"
+                confirmText="Transferir"
+                cancelText="Cancelar"
+                message={
+                    <div className="space-y-4">
+                        <p>Selecciona el laboratorio al que deseas transferir la donación #{selectedDonationId}</p>
+
+                        {laboratories.length === 0 ? (
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <p className="text-sm text-yellow-800">
+                                    ⚠️ No hay laboratorios registrados en el sistema
+                                </p>
+                            </div>
+                        ) : (
+                            <div>
+                                <label htmlFor="laboratory" className="block text-sm font-semibold text-slate-700 mb-2">
+                                    Laboratorio *
+                                </label>
+                                <select
+                                    id="laboratory"
+                                    value={selectedLab}
+                                    onChange={(e) => setSelectedLab(e.target.value)}
+                                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blood-500 focus:border-transparent transition-all"
+                                >
+                                    <option value="">Selecciona un laboratorio...</option>
+                                    {laboratories.map((lab) => (
+                                        <option key={lab.address} value={lab.address}>
+                                            {lab.name} - {lab.location}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {selectedLab && (
+                            <div className="bg-slate-50 p-4 rounded-lg space-y-2">
+                                <p className="text-sm">
+                                    <span className="font-semibold">Laboratorio:</span>{' '}
+                                    {laboratories.find(l => l.address === selectedLab)?.name}
+                                </p>
+                                <p className="text-sm">
+                                    <span className="font-semibold">Dirección:</span>{' '}
+                                    <code className="text-xs">{truncateAddress(selectedLab)}</code>
+                                </p>
+                            </div>
+                        )}
+
+                        <p className="text-xs text-slate-500">
+                            Esta acción transferirá el NFT de la donación al laboratorio seleccionado.
                         </p>
                     </div>
                 }

@@ -22,13 +22,6 @@ const navigationCards = [
         icon: "🔍",
         path: "/trace",
         gradient: "from-blood-500 to-blood-700"
-    },
-    {
-        name: "Marketplace",
-        description: "Ver derivados disponibles",
-        icon: "🛒",
-        path: "/marketplace",
-        gradient: "from-blockchain-500 to-blockchain-700"
     }
 ]
 
@@ -45,93 +38,83 @@ interface DonationInfo {
 }
 
 function Donor() {
-    const { account, web3, contractDonation } = useWallet()
+    const { account, web3, contractDonation, contractTracker } = useWallet()
     const router = useRouter()
     const [balance, setBalance] = useState<string>("0")
     const [donations, setDonations] = useState<DonationInfo[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [isRegistered, setIsRegistered] = useState(false)
     const [stats, setStats] = useState({
         totalDonations: 0,
         lastDonation: null as Date | null,
         totalDerivatives: 0
     })
 
-    // Obtener donaciones del usuario desde eventos Transfer
+    // Obtener donaciones del usuario desde eventos Donation del BloodTracker
     async function fetchDonations() {
-        if (!contractDonation || !account) return []
+        if (!contractDonation || !contractTracker || !account || !web3) return []
 
         try {
             const arrDonations: DonationInfo[] = []
 
-            // Obtener todos los eventos Transfer donde 'to' es el account actual
-            const transferEvents = await contractDonation.getPastEvents('Transfer', {
-                filter: { to: account },
+            // Obtener todos los eventos Donation del BloodTracker donde 'donor' es el donante
+            const donationEvents = await contractTracker.getPastEvents('Donation', {
+                filter: { donor: account },
                 fromBlock: 0,
                 toBlock: 'latest'
             })
 
-            // Para cada evento, obtener la trazabilidad completa
-            for (const event of transferEvents) {
+            console.log(`Found ${donationEvents.length} donation events for ${account}`)
+
+            // Para cada evento Donation, obtener los detalles completos
+            for (const event of donationEvents) {
                 const tokenId = Number(event.returnValues.tokenId)
+                const centerAddress = String(event.returnValues.center)
 
                 try {
-                    // Verificar si el token todavía existe (no ha sido quemado)
-                    const owner = await contractDonation.methods.ownerOf(tokenId).call()
+                    // Obtener timestamp del bloque
+                    const block = await web3.eth.getBlock(event.blockHash)
+                    const timestamp = new Date(Number(block.timestamp) * 1000)
 
-                    // Si el owner actual es el usuario, entonces todavía lo tiene
-                    if (web3!.utils.toChecksumAddress(String(owner)) === web3!.utils.toChecksumAddress(account)) {
-                        const { donationTrace } = await getTraceFromDonation(tokenId)
+                    // Obtener información del centro
+                    const centerInfo = await contractTracker.methods.companies(centerAddress).call()
 
-                        if (donationTrace && donationTrace.trace.length > 0) {
-                            const donationEvent = donationTrace.trace[0]
+                    // Obtener info de derivados si existen
+                    let plasmaId = 0
+                    let erythrocytesId = 0
+                    let plateletsId = 0
 
-                            // Obtener info de derivados si existen
-                            const donationData = await contractDonation.methods.donations(tokenId).call()
-                            const plasmaId = Number(donationData.plasmaId)
-                            const erythrocytesId = Number(donationData.erythrocytesId)
-                            const plateletsId = Number(donationData.plateletsId)
-
-                            const derivativesCount =
-                                (plasmaId > 0 ? 1 : 0) +
-                                (erythrocytesId > 0 ? 1 : 0) +
-                                (plateletsId > 0 ? 1 : 0)
-
-                            arrDonations.push({
-                                tokenId,
-                                donationDate: donationEvent.timestamp,
-                                centerName: donationEvent.name,
-                                centerAddress: donationEvent.owner,
-                                location: donationEvent.location,
-                                plasmaId: plasmaId > 0 ? plasmaId : undefined,
-                                erythrocytesId: erythrocytesId > 0 ? erythrocytesId : undefined,
-                                plateletsId: plateletsId > 0 ? plateletsId : undefined,
-                                derivativesCount
-                            })
-                        }
+                    try {
+                        const donationData = await contractDonation.methods.donations(tokenId).call()
+                        plasmaId = Number(donationData.plasmaId)
+                        erythrocytesId = Number(donationData.erythrocytesId)
+                        plateletsId = Number(donationData.plateletsId)
+                    } catch (err) {
+                        // El token fue quemado o no se puede acceder
+                        console.log(`Token ${tokenId} was burned or cannot be accessed`)
                     }
+
+                    const derivativesCount =
+                        (plasmaId > 0 ? 1 : 0) +
+                        (erythrocytesId > 0 ? 1 : 0) +
+                        (plateletsId > 0 ? 1 : 0)
+
+                    arrDonations.push({
+                        tokenId,
+                        donationDate: timestamp,
+                        centerName: String(centerInfo.name),
+                        centerAddress: centerAddress,
+                        location: String(centerInfo.location),
+                        plasmaId: plasmaId > 0 ? plasmaId : undefined,
+                        erythrocytesId: erythrocytesId > 0 ? erythrocytesId : undefined,
+                        plateletsId: plateletsId > 0 ? plateletsId : undefined,
+                        derivativesCount
+                    })
+
+                    console.log(`Added donation ${tokenId}`)
                 } catch (error) {
-                    // El token fue quemado (burn), buscar en eventos pasados
-                    const { donationTrace } = await getTraceFromDonation(tokenId)
-
-                    if (donationTrace && donationTrace.trace.length > 0) {
-                        const donationEvent = donationTrace.trace[0]
-
-                        // Obtener info de derivados desde trace
-                        // Cuando se procesa, hay 3 derivados generados
-                        const derivativesCount = 3 // plasma, erythrocytes, platelets
-
-                        arrDonations.push({
-                            tokenId,
-                            donationDate: donationEvent.timestamp,
-                            centerName: donationEvent.name,
-                            centerAddress: donationEvent.owner,
-                            location: donationEvent.location,
-                            plasmaId: undefined,
-                            erythrocytesId: undefined,
-                            plateletsId: undefined,
-                            derivativesCount
-                        })
-                    }
+                    // Ignorar errores de tokens individuales
+                    console.error(`Error processing donation ${tokenId}:`, error)
                 }
             }
 
@@ -172,6 +155,12 @@ function Donor() {
             .sort((a, b) => parseInt(a.year) - parseInt(b.year))
     }
 
+    // Verificar si el usuario está registrado como donante
+    // Un donante está registrado si tiene al menos una donación
+    async function checkDonorRegistration(donations: DonationInfo[]) {
+        return donations.length > 0
+    }
+
     // Cargar datos
     async function loadData() {
         setIsLoading(true)
@@ -183,6 +172,10 @@ function Donor() {
                 const donationsData = await fetchDonations()
                 setDonations(donationsData)
                 calculateStats(donationsData)
+
+                // Verificar si está registrado basándose en si tiene donaciones
+                const registered = await checkDonorRegistration(donationsData)
+                setIsRegistered(registered)
             }
         } catch (error) {
             console.error("Error loading donor data:", error)
@@ -192,10 +185,10 @@ function Donor() {
     }
 
     useEffect(() => {
-        if (account && web3) {
+        if (account && web3 && contractDonation && contractTracker) {
             loadData()
         }
-    }, [account, web3, contractDonation])
+    }, [account, web3, contractDonation, contractTracker])
 
     const chartData = prepareChartData(donations)
 
@@ -212,6 +205,39 @@ function Donor() {
         )
     }
 
+    // Si no está registrado como donante, mostrar mensaje
+    if (!isRegistered) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+                <Card variant="elevated" className="max-w-2xl mx-auto">
+                    <div className="p-12 text-center">
+                        <div className="text-6xl mb-6">🩸</div>
+                        <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                            No estás registrado como donante
+                        </h2>
+                        <p className="text-lg text-slate-600 mb-6">
+                            Para acceder al dashboard de donante, primero necesitas realizar una donación de sangre
+                            en un centro de donación registrado.
+                        </p>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                            <p className="text-sm text-blue-900">
+                                <strong>ℹ️ ¿Cómo registrarme?</strong><br />
+                                Visita un centro de donación registrado en la plataforma. Ellos se encargarán
+                                de registrar tu donación en el sistema blockchain.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => router.push('/all-role-grid')}
+                            className="px-6 py-3 bg-gradient-to-r from-blood-600 to-blockchain-600 text-white rounded-lg font-semibold hover:from-blood-700 hover:to-blockchain-700 transition-all"
+                        >
+                            Volver al Dashboard
+                        </button>
+                    </div>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="container mx-auto px-4 py-8">
             {/* Header */}
@@ -222,30 +248,9 @@ function Donor() {
             >
                 <Card variant="elevated" className="mb-6">
                     <div className="p-6">
-                        <div className="flex items-center justify-between flex-wrap gap-4">
-                            <div>
-                                <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                                    Dashboard del Donante
-                                </h1>
-                                <div className="flex items-center gap-4 text-slate-600">
-                                    <Tooltip content={account || ''}>
-                                        <span className="flex items-center gap-2">
-                                            <span className="font-semibold">Dirección:</span>
-                                            <code className="px-2 py-1 bg-slate-100 rounded text-sm">
-                                                {truncateAddress(account || '', 8, 6)}
-                                            </code>
-                                        </span>
-                                    </Tooltip>
-                                    <span className="flex items-center gap-2">
-                                        <span className="font-semibold">Balance:</span>
-                                        <span className="text-success-600 font-bold">{balance} TAS</span>
-                                    </span>
-                                </div>
-                            </div>
-                            <Badge status="completed" variant="solid">
-                                Donante Activo
-                            </Badge>
-                        </div>
+                        <h1 className="text-3xl font-bold text-slate-900">
+                            Dashboard del Donante
+                        </h1>
                     </div>
                 </Card>
             </motion.div>
@@ -330,36 +335,49 @@ function Donor() {
                             <h2 className="text-2xl font-bold text-slate-900 mb-6">
                                 Historial de Donaciones por Año
                             </h2>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <LineChart data={chartData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                                    <XAxis
-                                        dataKey="year"
-                                        stroke="#6B7280"
-                                        style={{ fontSize: '14px' }}
-                                    />
-                                    <YAxis
-                                        stroke="#6B7280"
-                                        style={{ fontSize: '14px' }}
-                                    />
-                                    <RechartsTooltip
-                                        contentStyle={{
-                                            backgroundColor: 'white',
-                                            border: '1px solid #E5E7EB',
-                                            borderRadius: '8px',
-                                            padding: '12px'
-                                        }}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="donaciones"
-                                        stroke="#503291"
-                                        strokeWidth={3}
-                                        dot={{ fill: '#503291', r: 5 }}
-                                        activeDot={{ r: 7 }}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
+                            {chartData.length === 0 ? (
+                                <div className="flex items-center justify-center h-64 text-slate-400">
+                                    <div className="text-center">
+                                        <p className="text-lg">No hay datos para mostrar</p>
+                                        <p className="text-sm mt-2">Las donaciones aparecerán aquí cuando las realices</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                                        <XAxis
+                                            dataKey="year"
+                                            stroke="#6B7280"
+                                            style={{ fontSize: '14px', fontWeight: '500' }}
+                                            label={{ value: 'Año', position: 'insideBottom', offset: -5, style: { fontSize: '12px', fill: '#6B7280' } }}
+                                        />
+                                        <YAxis
+                                            stroke="#6B7280"
+                                            style={{ fontSize: '14px' }}
+                                            allowDecimals={false}
+                                            label={{ value: 'Donaciones', angle: -90, position: 'insideLeft', style: { fontSize: '12px', fill: '#6B7280' } }}
+                                        />
+                                        <RechartsTooltip
+                                            contentStyle={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid #E5E7EB',
+                                                borderRadius: '8px',
+                                                padding: '12px'
+                                            }}
+                                            formatter={(value: any) => [`${value} donación(es)`, 'Donaciones']}
+                                        />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="donaciones"
+                                            stroke="#DC2626"
+                                            strokeWidth={3}
+                                            dot={{ fill: '#DC2626', r: 6, strokeWidth: 2, stroke: '#fff' }}
+                                            activeDot={{ r: 8, strokeWidth: 2 }}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            )}
                         </div>
                     </Card>
                 </motion.div>

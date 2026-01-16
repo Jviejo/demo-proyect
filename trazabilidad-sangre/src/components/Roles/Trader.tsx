@@ -16,9 +16,12 @@ import { truncateAddress, formatDate, formatDateTime, formatEther, getDerivative
 import { Tooltip } from "../ui/Tooltip"
 import { Derivative } from "@/lib/types"
 import { ShoppingCartIcon, CurrencyDollarIcon, ArchiveBoxIcon } from '@heroicons/react/24/solid'
+import { PlasmaIcon, ErythrocytesIcon, PlateletsIcon } from '../ProductIcons'
+import { ListItemModal } from '../marketplace/ListItemModal'
 
 interface PurchaseInfo {
     tokenId: number
+    tokenIdOrigin: number
     derivativeType: number
     purchaseDate: Date
     price: bigint
@@ -49,6 +52,7 @@ function Trader() {
     const [purchases, setPurchases] = useState<PurchaseInfo[]>([])
     const [inventory, setInventory] = useState<number>(0)
     const [isLoading, setIsLoading] = useState(true)
+    const [isListItemModalOpen, setIsListItemModalOpen] = useState(false)
     const [stats, setStats] = useState({
         totalPurchases: 0,
         totalSpent: '0',
@@ -95,6 +99,7 @@ function Trader() {
 
                         arrPurchases.push({
                             tokenId,
+                            tokenIdOrigin: Number(tokenIdOrigin),
                             derivativeType,
                             purchaseDate: purchaseEvent?.timestamp || new Date(),
                             price,
@@ -166,6 +171,11 @@ function Trader() {
         router.push(path)
     }
 
+    // Manejar éxito de listado
+    async function handleListItemSuccess() {
+        await loadData()
+    }
+
     // Cargar datos
     async function loadData() {
         setIsLoading(true)
@@ -219,30 +229,9 @@ function Trader() {
             >
                 <Card variant="elevated" className="mb-6">
                     <div className="p-6">
-                        <div className="flex items-center justify-between flex-wrap gap-4">
-                            <div>
-                                <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                                    Dashboard del Trader
-                                </h1>
-                                <div className="flex items-center gap-4 text-slate-600">
-                                    <Tooltip content={account || ''}>
-                                        <span className="flex items-center gap-2">
-                                            <span className="font-semibold">Dirección:</span>
-                                            <code className="px-2 py-1 bg-slate-100 rounded text-sm">
-                                                {truncateAddress(account || '', 8, 6)}
-                                            </code>
-                                        </span>
-                                    </Tooltip>
-                                    <span className="flex items-center gap-2">
-                                        <span className="font-semibold">Balance:</span>
-                                        <span className="text-success-600 font-bold">{balance} TAS</span>
-                                    </span>
-                                </div>
-                            </div>
-                            <Badge status="completed" variant="solid">
-                                Trader Activo
-                            </Badge>
-                        </div>
+                        <h1 className="text-3xl font-bold text-slate-900">
+                            Dashboard del Trader
+                        </h1>
                     </div>
                 </Card>
             </motion.div>
@@ -395,88 +384,83 @@ function Trader() {
                         </div>
                     </Card>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {purchases.map((purchase, index) => (
                             <motion.div
                                 key={purchase.transactionHash}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.3, delay: index * 0.05 }}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: index * 0.03 }}
+                                className="w-full p-4 bg-white border-2 border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex flex-row items-center gap-4 hover:border-primary-300"
                             >
-                                <Card variant="elevated" className="hover:shadow-2xl transition-shadow">
-                                    <div className="p-6">
-                                        <div className="flex items-start justify-between flex-wrap gap-4">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    <span className="text-2xl">
-                                                        {purchase.derivativeType === Derivative.Plasma && '🔴'}
-                                                        {purchase.derivativeType === Derivative.Erythrocytes && '🔵'}
-                                                        {purchase.derivativeType === Derivative.Platelets && '🟡'}
-                                                    </span>
-                                                    <div>
-                                                        <h3 className="text-lg font-bold text-slate-900">
-                                                            {getDerivativeTypeName(purchase.derivativeType)} #{purchase.tokenId}
-                                                        </h3>
-                                                        <p className="text-sm text-slate-600">
-                                                            {formatDateTime(purchase.purchaseDate)}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                                    <div>
-                                                        <p className="text-sm text-slate-600 mb-1">
-                                                            Precio Pagado:
-                                                        </p>
-                                                        <p className="text-xl font-bold text-success-600">
-                                                            {formatEther(purchase.price)} TAS
-                                                        </p>
-                                                    </div>
-
-                                                    <div>
-                                                        <p className="text-sm text-slate-600 mb-1">
-                                                            Vendedor:
-                                                        </p>
-                                                        <Tooltip content={purchase.seller}>
-                                                            <code className="text-sm font-semibold text-slate-900">
-                                                                {truncateAddress(purchase.seller)}
-                                                            </code>
-                                                        </Tooltip>
-                                                    </div>
-                                                </div>
-
-                                                <div className="mt-4 pt-4 border-t border-gray-200">
-                                                    <p className="text-xs text-slate-500">
-                                                        TX:{' '}
-                                                        <Tooltip content={purchase.transactionHash}>
-                                                            <code className="text-xs">
-                                                                {truncateAddress(purchase.transactionHash, 10, 8)}
-                                                            </code>
-                                                        </Tooltip>
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex flex-col items-end gap-2">
-                                                <Badge status="completed" variant="solid">
-                                                    Comprado
-                                                </Badge>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleNavigate(`/trace/${purchase.tokenId}`)}
-                                                >
-                                                    Ver Trazabilidad
-                                                </Button>
-                                            </div>
-                                        </div>
+                                {/* Icon and Product */}
+                                <div className="flex items-center gap-2 min-w-[160px]">
+                                    {purchase.derivativeType === Derivative.Plasma && <PlasmaIcon />}
+                                    {purchase.derivativeType === Derivative.Erythrocytes && <ErythrocytesIcon />}
+                                    {purchase.derivativeType === Derivative.Platelets && <PlateletsIcon />}
+                                    <div>
+                                        <h3 className="text-base font-bold text-slate-900">
+                                            {getDerivativeTypeName(purchase.derivativeType)} #{purchase.tokenId}
+                                        </h3>
+                                        <Badge status="completed" variant="solid" className="mt-1 scale-75 origin-left">
+                                            Completado
+                                        </Badge>
                                     </div>
-                                </Card>
+                                </div>
+
+                                {/* Purchase Info - Compact */}
+                                <div className="flex-1 flex items-center gap-4 min-w-0">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-semibold text-slate-700">
+                                            {formatDate(purchase.purchaseDate)}
+                                        </span>
+                                        <span className="text-slate-400">•</span>
+                                        <span className="text-sm font-bold text-success-600">
+                                            {formatEther(purchase.price, 4)} ETH
+                                        </span>
+                                        <span className="text-slate-400">•</span>
+                                        <Tooltip content={purchase.seller}>
+                                            <span className="text-xs font-mono text-slate-600">
+                                                Vendedor: {truncateAddress(purchase.seller, 4, 4)}
+                                            </span>
+                                        </Tooltip>
+                                    </div>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    <Button
+                                        variant="success"
+                                        size="sm"
+                                        onClick={() => setIsListItemModalOpen(true)}
+                                        className="text-xs"
+                                    >
+                                        💼 Vender
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleNavigate(`/trace/${purchase.tokenIdOrigin}`)}
+                                        className="text-xs"
+                                    >
+                                        Ver Trazabilidad
+                                        <svg className="w-3 h-3 ms-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
+                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11v4.833A1.166 1.166 0 0 1 13.833 17H2.167A1.167 1.167 0 0 1 1 15.833V4.167A1.166 1.166 0 0 1 2.167 3h4.618m4.447-2H17v5.768M9.111 8.889l7.778-7.778"/>
+                                        </svg>
+                                    </Button>
+                                </div>
                             </motion.div>
                         ))}
                     </div>
                 )}
             </motion.div>
+
+            {/* Modal para listar producto */}
+            <ListItemModal
+                isOpen={isListItemModalOpen}
+                onClose={() => setIsListItemModalOpen(false)}
+                onSuccess={handleListItemSuccess}
+            />
         </div>
     )
 }

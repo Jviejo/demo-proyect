@@ -12,6 +12,7 @@ import { Skeleton } from "../ui/Skeleton"
 import { Stat } from "../ui/Stat"
 import Grid from "../ui/Grid"
 import { Card } from "../ui/Card"
+import { Badge } from "../ui/Badge"
 import { truncateAddress } from "@/lib/helpers"
 import { BeakerIcon, CubeIcon, ShoppingBagIcon } from '@heroicons/react/24/solid'
 
@@ -62,15 +63,34 @@ export default function Laboratory() {
         const arrDerivativeTokens = []
         const numTokens = await contractDerivative!.methods.balanceOf(account).call()
         for (let i = 0; i < Number(numTokens); i++){
-            const tokenId = await contractDerivative!.methods.tokenOfOwnerByIndex(account, i).call()
-            const {tokenIdOrigin, derivative} = await contractDerivative!.methods.products(tokenId).call()
-            const events = await getEventsFromDerivative(Number(tokenId))
-            arrDerivativeTokens.push({
-                tokenId: Number(tokenId),
-                type: Number(derivative),
-                processDate: events[0].timestamp,
-                tokenIdOrigin: Number(tokenIdOrigin)
-            })
+            try {
+                const tokenId = await contractDerivative!.methods.tokenOfOwnerByIndex(account, i).call()
+                const tokenIdNum = Number(tokenId)
+
+                // Validar que tokenId sea un número válido
+                if (isNaN(tokenIdNum)) {
+                    console.error(`Invalid tokenId at index ${i}:`, tokenId)
+                    continue
+                }
+
+                const {tokenIdOrigin, derivative} = await contractDerivative!.methods.products(tokenIdNum).call()
+                const events = await getEventsFromDerivative(tokenIdNum)
+
+                // Validar que hay eventos
+                if (!events || events.length === 0) {
+                    console.warn(`No events found for derivative token ${tokenIdNum}`)
+                    continue
+                }
+
+                arrDerivativeTokens.push({
+                    tokenId: tokenIdNum,
+                    type: Number(derivative),
+                    processDate: events[0].timestamp,
+                    tokenIdOrigin: Number(tokenIdOrigin)
+                })
+            } catch (error) {
+                console.error(`Error processing derivative token at index ${i}:`, error)
+            }
         }
         setDerivativeTokens(arrDerivativeTokens)
         return arrDerivativeTokens
@@ -80,17 +100,37 @@ export default function Laboratory() {
         const arrListedDerivatives = []
         const tokensOnSale = await contractTracker!.methods.getTokensOnSale(contractDerivative?.options.address).call()
         for (const tokenId of tokensOnSale){
-            const {"0": price, "1": seller} = await contractTracker!.methods.getListing(contractDerivative!.options.address, tokenId).call()
-            if (web3!.utils.toChecksumAddress(seller) !== web3!.utils.toChecksumAddress(account!)) continue
-            const {tokenIdOrigin, derivative} = await contractDerivative!.methods.products(tokenId).call()
-            const events = await getEventsFromDerivative(Number(tokenId))
-            arrListedDerivatives.push({
-                tokenId: Number(tokenId),
-                type: Number(derivative),
-                processDate: events[0].timestamp,
-                tokenIdOrigin: Number(tokenIdOrigin),
-                price: BigInt(price)
-            })
+            try {
+                const {"0": price, "1": seller} = await contractTracker!.methods.getListing(contractDerivative!.options.address, tokenId).call()
+                if (web3!.utils.toChecksumAddress(seller) !== web3!.utils.toChecksumAddress(account!)) continue
+
+                const tokenIdNum = Number(tokenId)
+
+                // Validar que tokenId sea un número válido
+                if (isNaN(tokenIdNum)) {
+                    console.error(`Invalid tokenId in listing:`, tokenId)
+                    continue
+                }
+
+                const {tokenIdOrigin, derivative} = await contractDerivative!.methods.products(tokenIdNum).call()
+                const events = await getEventsFromDerivative(tokenIdNum)
+
+                // Validar que hay eventos
+                if (!events || events.length === 0) {
+                    console.warn(`No events found for listed derivative token ${tokenIdNum}`)
+                    continue
+                }
+
+                arrListedDerivatives.push({
+                    tokenId: tokenIdNum,
+                    type: Number(derivative),
+                    processDate: events[0].timestamp,
+                    tokenIdOrigin: Number(tokenIdOrigin),
+                    price: BigInt(price)
+                })
+            } catch (error) {
+                console.error(`Error processing listed derivative token ${tokenId}:`, error)
+            }
         }
         setListedDerivatives(arrListedDerivatives)
         return arrListedDerivatives
@@ -135,16 +175,9 @@ export default function Laboratory() {
 
     return (
         <div className="flex flex-col flex-1 w-full h-full p-6 gap-6 bg-slate-50">
-            {/* Header con título y stats */}
+            {/* Header con título */}
             <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-900">Laboratory Dashboard</h1>
-                        <p className="text-sm text-slate-600 mt-1">
-                            Address: <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">{truncateAddress(account || '')}</span>
-                        </p>
-                    </div>
-                </div>
+                <h1 className="text-3xl font-bold text-slate-900">Dashboard Laboratorio</h1>
 
                 {/* Stats Cards */}
                 <motion.div
