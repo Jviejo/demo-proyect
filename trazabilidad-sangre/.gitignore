@@ -62,3 +62,10 @@ foundry/.anvil-env
 
 # Wallets de testing (contienen claves privadas)
 foundry/.clientWallets
+
+# Archivos de log y estado temporal
+*.log
+anvil-state.json
+
+# Configuración local de Claude
+.claude/settings.local.json
