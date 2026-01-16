@@ -4,3 +4,13 @@ TRIAS_KEY_ADDRESS=0x80b940f5261d499915d21cfc23fbb14d21a71b19
 
 # Admin inicial para deployment (usar primera cuenta de Anvil por defecto)
 INITIAL_ADMIN_ADDRESS=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+
+# Red Besu CodeCrypto (Chain ID: 81234)
+BESU_RPC_URL=https://besu1.proyectos.codecrypto.academy
+BESU_ADMIN_ADDRESS=0x60015448D7418C4e70275a5aA2340086A9f8Dd01
+BESU_PRIVATE_KEY=0x3f5d84191f172800677da32d4897e048404cfeb23c2c360edaa4341464d43b1c
+
+# Endpoints de backup (para referencia)
+# BESU_RPC_BACKUP_1=https://besu2.proyectos.codecrypto.academy
+# BESU_RPC_BACKUP_2=https://besu3.proyectos.codecrypto.academy
+# BESU_RPC_BACKUP_3=https://besu4.proyectos.codecrypto.academy
