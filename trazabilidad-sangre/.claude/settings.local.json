@@ -89,7 +89,21 @@
       "mcp__plugin_playwright_playwright__browser_console_messages",
       "Bash(npx next dev:*)",
       "Bash(cmd.exe /c \"start /B npm run dev > server.log 2>&1\")",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git push:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh auth refresh:*)",
+      "Bash(gh pr create:*)",
+      "Bash(cast chain-id:*)",
+      "Bash(INITIAL_ADMIN_ADDRESS=$BESU_ADMIN_ADDRESS forge script:*)",
+      "Bash(npx next:*)",
+      "Bash(echo:*)",
+      "Bash(node generateWallets.js:*)",
+      "Bash(python3:*)",
+      "Bash(cast keccak:*)",
+      "Bash(start cmd /c \"npm run dev > dev-output.log 2>&1\")",
+      "Bash(cmd.exe /c start \"Next.js Dev Server\" \"C:\\\\Users\\\\andre\\\\programacion\\\\codecrypto\\\\proyectos\\\\demo-proyect\\\\trazabilidad-sangre\\\\start-dev.bat\")",
+      "Bash(cmd.exe /c \"start cmd /k \"\"npm run dev\"\"\")"
     ]
   }
 }
