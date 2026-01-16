@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { useWallet } from "@/components/ConnectWalletButton";
 import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
 import Button from "@/components/ui/Button";
+import ConfirmModal from "@/components/ui/ConfirmModal";
+import { truncateAddress } from "@/lib/helpers";
 import { showTransactionSuccess, showTransactionError, showTransactionPending } from "@/lib/toast";
 
 interface PendingRequest {
@@ -23,7 +25,11 @@ const PendingRequestsTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate })
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [selectedRequestName, setSelectedRequestName] = useState<string>("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -104,8 +110,14 @@ const PendingRequestsTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate })
     }
   };
 
-  const handleApprove = async (requestId: string) => {
-    if (!confirm("¿Estás seguro de aprobar esta solicitud?")) return;
+  const handleApproveClick = (requestId: string, name: string) => {
+    setSelectedRequestId(requestId);
+    setSelectedRequestName(name);
+    setShowApproveModal(true);
+  };
+
+  const handleApproveConfirm = async () => {
+    if (!selectedRequestId) return;
 
     try {
       setIsProcessing(true);
@@ -117,10 +129,14 @@ const PendingRequestsTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate })
       );
 
       const receipt = await contractTracker.methods
-        .approveRequest(requestId)
+        .approveRequest(selectedRequestId)
         .send({ from: account, gas: "500000" });
 
       showTransactionSuccess(receipt.transactionHash, "Solicitud aprobada exitosamente");
+
+      setShowApproveModal(false);
+      setSelectedRequestId(null);
+      setSelectedRequestName("");
 
       // Reload data
       await loadPendingRequests();
@@ -141,7 +157,8 @@ const PendingRequestsTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate })
 
   const handleRejectConfirm = async () => {
     if (!selectedRequestId || rejectionReason.trim().length < 10) {
-      alert("Por favor ingresa una razón válida (mínimo 10 caracteres)");
+      setValidationMessage("Por favor ingresa una razón válida (mínimo 10 caracteres)");
+      setShowValidationModal(true);
       return;
     }
 
@@ -289,7 +306,7 @@ const PendingRequestsTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate })
                       {request.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-600">
-                      {request.applicant.slice(0, 10)}...
+                      {truncateAddress(request.applicant)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -305,7 +322,7 @@ const PendingRequestsTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate })
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => handleApprove(request.requestId)}
+                          onClick={() => handleApproveClick(request.requestId, request.name)}
                           disabled={isProcessing}
                           className="px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
@@ -327,6 +344,35 @@ const PendingRequestsTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate })
           )}
         </div>
       </div>
+
+      {/* Modal de aprobación */}
+      <ConfirmModal
+        isOpen={showApproveModal}
+        onClose={() => {
+          setShowApproveModal(false);
+          setSelectedRequestId(null);
+          setSelectedRequestName("");
+        }}
+        onConfirm={handleApproveConfirm}
+        title="Aprobar Solicitud"
+        message={`¿Estás seguro de aprobar la solicitud de "${selectedRequestName}"? Esta acción otorgará acceso a la plataforma.`}
+        confirmText="Sí, Aprobar"
+        cancelText="Cancelar"
+        variant="success"
+        loading={isProcessing}
+      />
+
+      {/* Modal de validación */}
+      <ConfirmModal
+        isOpen={showValidationModal}
+        onClose={() => setShowValidationModal(false)}
+        onConfirm={() => setShowValidationModal(false)}
+        title="Atención"
+        message={validationMessage}
+        confirmText="Entendido"
+        cancelText="Cerrar"
+        variant="primary"
+      />
 
       {/* Modal de rechazo */}
       {showRejectModal && (

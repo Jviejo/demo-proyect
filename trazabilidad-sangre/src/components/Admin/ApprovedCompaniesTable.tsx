@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { useWallet } from "@/components/ConnectWalletButton";
 import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
 import Button from "@/components/ui/Button";
+import ConfirmModal from "@/components/ui/ConfirmModal";
+import { truncateAddress } from "@/lib/helpers";
 import { showTransactionSuccess, showTransactionError, showTransactionPending } from "@/lib/toast";
 
 interface ApprovedCompany {
@@ -22,6 +24,9 @@ const ApprovedCompaniesTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate 
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModifyModal, setShowModifyModal] = useState(false);
+  const [showRevokeModal, setShowRevokeModal] = useState(false);
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationMessage, setValidationMessage] = useState("");
   const [selectedCompany, setSelectedCompany] = useState<ApprovedCompany | null>(null);
   const [newRole, setNewRole] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -97,8 +102,13 @@ const ApprovedCompaniesTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate 
     }
   };
 
-  const handleRevoke = async (companyAddress: string, companyName: string) => {
-    if (!confirm(`¿Estás seguro de revocar el acceso de "${companyName}"?\n\nEsta acción es irreversible y la empresa dejará de poder operar.`)) return;
+  const handleRevokeClick = (company: ApprovedCompany) => {
+    setSelectedCompany(company);
+    setShowRevokeModal(true);
+  };
+
+  const handleRevokeConfirm = async () => {
+    if (!selectedCompany) return;
 
     try {
       setIsProcessing(true);
@@ -110,10 +120,13 @@ const ApprovedCompaniesTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate 
       );
 
       const receipt = await contractTracker.methods
-        .revokeCompany(companyAddress)
+        .revokeCompany(selectedCompany.address)
         .send({ from: account, gas: "500000" });
 
       showTransactionSuccess(receipt.transactionHash, "Empresa revocada exitosamente");
+
+      setShowRevokeModal(false);
+      setSelectedCompany(null);
 
       await loadApprovedCompanies();
       if (onUpdate) onUpdate();
@@ -133,7 +146,8 @@ const ApprovedCompaniesTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate 
 
   const handleModifyRoleConfirm = async () => {
     if (!selectedCompany || newRole === selectedCompany.role) {
-      alert("Por favor selecciona un rol diferente");
+      setValidationMessage("Por favor selecciona un rol diferente");
+      setShowValidationModal(true);
       return;
     }
 
@@ -237,7 +251,7 @@ const ApprovedCompaniesTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate 
                     className="hover:bg-slate-50"
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{company.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-600">{company.address.slice(0, 10)}...</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-600">{truncateAddress(company.address)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                         {company.roleName}
@@ -254,7 +268,7 @@ const ApprovedCompaniesTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate 
                           ✏️ Modificar Rol
                         </button>
                         <button
-                          onClick={() => handleRevoke(company.address, company.name)}
+                          onClick={() => handleRevokeClick(company)}
                           disabled={isProcessing}
                           className="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
                         >
@@ -269,6 +283,34 @@ const ApprovedCompaniesTable: React.FC<{ onUpdate?: () => void }> = ({ onUpdate 
           )}
         </div>
       </div>
+
+      {/* Modal de revocar */}
+      <ConfirmModal
+        isOpen={showRevokeModal}
+        onClose={() => {
+          setShowRevokeModal(false);
+          setSelectedCompany(null);
+        }}
+        onConfirm={handleRevokeConfirm}
+        title="Revocar Empresa"
+        message={selectedCompany ? `¿Estás seguro de revocar el acceso de "${selectedCompany.name}"? Esta acción es irreversible y la empresa dejará de poder operar en la plataforma.` : ""}
+        confirmText="Sí, Revocar"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={isProcessing}
+      />
+
+      {/* Modal de validación */}
+      <ConfirmModal
+        isOpen={showValidationModal}
+        onClose={() => setShowValidationModal(false)}
+        onConfirm={() => setShowValidationModal(false)}
+        title="Atención"
+        message={validationMessage}
+        confirmText="Entendido"
+        cancelText="Cerrar"
+        variant="primary"
+      />
 
       {/* Modal de modificar rol */}
       {showModifyModal && selectedCompany && (
