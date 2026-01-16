@@ -21,12 +21,16 @@ export default function ({params}: {params: {id: string}}){
     const router = useRouter()
 
     useEffect(() => {
+        console.log(`[TracePage] Loading trace for donation #${tokenId}`)
+
         getTraceFromDonation(Number(tokenId))
             .then((res) => {
+                console.log(`[TracePage] Trace result:`, res)
                 setTrace(res)
                 setLoading(false)
             })
             .catch((err) => {
+                console.error(`[TracePage] Error loading trace:`, err)
                 setError(err.message || 'Error cargando trazabilidad')
                 setLoading(false)
             })

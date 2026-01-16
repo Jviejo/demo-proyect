@@ -38,10 +38,26 @@ const PendingApprovalPage = () => {
           .getRequestDetails(requestId)
           .call();
 
+        const status = Number(request.status);
+
+        // Status: 0 = None, 1 = Pending, 2 = Approved, 3 = Rejected
+        if (status === 2) {
+          // APPROVED - Redirigir a la página principal de la app
+          router.push("/all-role-grid");
+          return;
+        } else if (status === 3) {
+          // REJECTED - Redirigir a página de registro para que pueda volver a intentar
+          router.push("/role-registro");
+          return;
+        }
+
         setRequestData({
-          id: requestId,
+          id: String(requestId),
           ...request,
         });
+      } else {
+        // No hay solicitud activa, redirigir a registro
+        router.push("/role-registro");
       }
     } catch (error) {
       console.error("Error loading request data:", error);

@@ -5,7 +5,6 @@ import { useWallet } from '@/components/ConnectWalletButton'
 import { SearchHero } from '@/components/trace/SearchHero'
 import { LatestDonations } from '@/components/trace/LatestDonations'
 import { TopDonors } from '@/components/trace/TopDonors'
-import { getTraceFromDonation } from '@/lib/events'
 import { motion } from 'framer-motion'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Card } from '@/components/ui/Card'
@@ -88,43 +87,48 @@ export default function TracePage() {
     }
 
     async function fetchDonations(): Promise<DonationData[]> {
-        if (!contractDonation || !web3) return []
+        if (!contractTracker || !web3) return []
 
         try {
-            const transferEvents = await contractDonation.getPastEvents('Transfer', {
-                filter: { from: '0x0000000000000000000000000000000000000000' },
+            console.log('Fetching donations from BloodTracker...')
+
+            // Obtener TODOS los eventos Donation del BloodTracker (mucho más eficiente)
+            const donationEvents = await contractTracker.getPastEvents('Donation', {
                 fromBlock: 0,
                 toBlock: 'latest'
             })
 
+            console.log(`Found ${donationEvents.length} donation events`)
+
             const donationsArr: DonationData[] = []
 
-            for (const event of transferEvents) {
-                const tokenId = Number(event.returnValues.tokenId)
-                const donorAddress = String(event.returnValues.to)
-                const blockNumber = Number(event.blockNumber)
-
+            for (const event of donationEvents) {
                 try {
-                    const { donationTrace } = await getTraceFromDonation(tokenId)
+                    const tokenId = Number(event.returnValues.tokenId)
+                    const donorAddress = String(event.returnValues.donor)
+                    const centerAddress = String(event.returnValues.center)
+                    const blockNumber = Number(event.blockNumber)
 
-                    if (donationTrace && donationTrace.trace.length > 0) {
-                        const donationEvent = donationTrace.trace[0]
+                    // Obtener timestamp del bloque
+                    const block = await web3.eth.getBlock(event.blockHash)
+                    const timestamp = Number(block.timestamp)
 
-                        donationsArr.push({
-                            id: tokenId,
-                            donor: donorAddress,
-                            center: donationEvent.owner,
-                            timestamp: Math.floor(donationEvent.timestamp.getTime() / 1000),
-                            blockNumber
-                        })
-                    }
+                    donationsArr.push({
+                        id: tokenId,
+                        donor: donorAddress,
+                        center: centerAddress,
+                        timestamp: timestamp,
+                        blockNumber
+                    })
                 } catch (error) {
-                    console.error(`Error processing donation ${tokenId}:`, error)
+                    console.error(`Error processing donation event:`, error)
                 }
             }
 
-            // Sort by timestamp descending
+            // Sort by timestamp descending (más recientes primero)
             donationsArr.sort((a, b) => b.timestamp - a.timestamp)
+
+            console.log(`Successfully processed ${donationsArr.length} donations`)
 
             return donationsArr
         } catch (error) {
