@@ -40,11 +40,34 @@ export async function getDonations(address: string) {
     if (!web3 || !contractTracker) return [];
 
     const donations = []
-    const events = await contractTracker.getPastEvents('Donation', {
-        filter: { donor: address },
-        fromBlock: process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK,
-        toBlock: 'latest'
-    }) as DonationEventLog[]
+
+    // Obtener el bloque actual
+    const latestBlock = Number(await web3.eth.getBlockNumber())
+
+    // Besu tiene un límite de rango, así que consultamos en chunks
+    const CHUNK_SIZE = 1000
+    const allEventsRaw: any[] = []
+
+    // Calcular el bloque de inicio (últimos 10000 bloques o desde deployment)
+    const deploymentBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+    const startBlock = Math.max(deploymentBlock, latestBlock - 10000)
+
+    for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+        try {
+            const events = await contractTracker.getPastEvents('Donation', {
+                filter: { donor: address },
+                fromBlock,
+                toBlock
+            })
+            allEventsRaw.push(...events)
+        } catch (chunkError) {
+            console.error(`Error fetching donations chunk ${fromBlock}-${toBlock}:`, chunkError)
+        }
+    }
+
+    const events = allEventsRaw as DonationEventLog[]
 
     for (const event of events) {
         //consulta tracker para obtener nombre y localización del centro
@@ -73,11 +96,34 @@ export async function getExtractions(address: string) {
     if (!web3 || !contractTracker) return [];
 
     const donations = []
-    const events = await contractTracker.getPastEvents('Donation', {
-        filter: { center: address },
-        fromBlock: process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK,
-        toBlock: 'latest'
-    }) as DonationEventLog[]
+
+    // Obtener el bloque actual
+    const latestBlock = Number(await web3.eth.getBlockNumber())
+
+    // Besu tiene un límite de rango, así que consultamos en chunks
+    const CHUNK_SIZE = 1000
+    const allEventsRaw: any[] = []
+
+    // Calcular el bloque de inicio (últimos 10000 bloques o desde deployment)
+    const deploymentBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+    const startBlock = Math.max(deploymentBlock, latestBlock - 10000)
+
+    for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+        try {
+            const events = await contractTracker.getPastEvents('Donation', {
+                filter: { center: address },
+                fromBlock,
+                toBlock
+            })
+            allEventsRaw.push(...events)
+        } catch (chunkError) {
+            console.error(`Error fetching extractions chunk ${fromBlock}-${toBlock}:`, chunkError)
+        }
+    }
+
+    const events = allEventsRaw as DonationEventLog[]
 
     for (const event of events) {
         //consulta bloque para obtener la hora
@@ -98,14 +144,36 @@ export async function getExtractions(address: string) {
  * @returns Registro de procesamientos realizados por el laboratorio
  */
 export async function getProcesses(address: string) {
-    const { contractDonation } = getContracts();
-    if (!contractDonation) return [];
+    const { web3, contractDonation } = getContracts();
+    if (!contractDonation || !web3) return [];
 
-    return await contractDonation.getPastEvents('Transfer', {
-        filter: { from: address, to: ZERO_ADDRESS },
-        fromBlock: process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK,
-        toBlock: 'latest'
-    })
+    // Obtener el bloque actual
+    const latestBlock = Number(await web3.eth.getBlockNumber())
+
+    // Besu tiene un límite de rango, así que consultamos en chunks
+    const CHUNK_SIZE = 1000
+    const allEventsRaw: any[] = []
+
+    // Calcular el bloque de inicio (últimos 10000 bloques o desde deployment)
+    const deploymentBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+    const startBlock = Math.max(deploymentBlock, latestBlock - 10000)
+
+    for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+        try {
+            const events = await contractDonation.getPastEvents('Transfer', {
+                filter: { from: address, to: ZERO_ADDRESS },
+                fromBlock,
+                toBlock
+            })
+            allEventsRaw.push(...events)
+        } catch (chunkError) {
+            console.error(`Error fetching processes chunk ${fromBlock}-${toBlock}:`, chunkError)
+        }
+    }
+
+    return allEventsRaw
 }
 
 /**
@@ -114,24 +182,42 @@ export async function getProcesses(address: string) {
  * @returns Traza completa del evento Transfer
  */
 export async function getEventsFromDonation(tokenId: number) {
-    const { contractDonation } = getContracts();
-    if (!contractDonation) {
+    const { web3, contractDonation } = getContracts();
+    if (!contractDonation || !web3) {
         console.log('getEventsFromDonation: No contract available')
         return [];
     }
 
     console.log(`getEventsFromDonation: Fetching events for tokenId ${tokenId}`)
 
-    // Validar fromBlock
-    const fromBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
-    const validFromBlock = isNaN(fromBlock) ? 0 : fromBlock
+    // Obtener el bloque actual
+    const latestBlock = Number(await web3.eth.getBlockNumber())
 
-    // Obtener TODOS los eventos Transfer (no podemos filtrar por tokenId porque no está indexado)
-    const allEvents = await contractDonation.getPastEvents('Transfer', {
-        fromBlock: validFromBlock,
-        toBlock: 'latest'
-    }) as TransferEventLog[]
+    // Besu tiene un límite de rango, así que consultamos en chunks
+    const CHUNK_SIZE = 1000
+    const allEventsRaw: any[] = []
 
+    // Calcular el bloque de inicio (últimos 10000 bloques o desde deployment)
+    const deploymentBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+    const startBlock = Math.max(deploymentBlock, latestBlock - 10000)
+
+    console.log(`getEventsFromDonation: Querying from block ${startBlock} to ${latestBlock}`)
+
+    for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+        try {
+            const events = await contractDonation.getPastEvents('Transfer', {
+                fromBlock,
+                toBlock
+            })
+            allEventsRaw.push(...events)
+        } catch (chunkError) {
+            console.error(`Error fetching donation chunk ${fromBlock}-${toBlock}:`, chunkError)
+        }
+    }
+
+    const allEvents = allEventsRaw as TransferEventLog[]
     console.log(`getEventsFromDonation: Found ${allEvents.length} total Transfer events`)
 
     // Filtrar manualmente por tokenId
@@ -151,8 +237,8 @@ export async function getEventsFromDonation(tokenId: number) {
  * @returns Traza completa del evento Transfer
  */
 export async function getEventsFromDerivative(tokenId: number, fromBlock: number = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0) {
-    const { contractDerivative } = getContracts();
-    if (!contractDerivative) return [];
+    const { web3, contractDerivative } = getContracts();
+    if (!contractDerivative || !web3) return [];
 
     // Convertir a número si viene como BigInt
     const tokenIdNum = typeof tokenId === 'bigint' ? Number(tokenId) : tokenId
@@ -163,17 +249,37 @@ export async function getEventsFromDerivative(tokenId: number, fromBlock: number
         return [];
     }
 
-    // Validar que fromBlock sea un número válido
-    const validFromBlock = (fromBlock === null || fromBlock === undefined || isNaN(fromBlock)) ? 0 : fromBlock
+    console.log(`getEventsFromDerivative: Fetching events for tokenId ${tokenIdNum}`)
 
-    console.log(`getEventsFromDerivative: Fetching events for tokenId ${tokenIdNum} from block ${validFromBlock}`)
+    // Obtener el bloque actual
+    const latestBlock = Number(await web3.eth.getBlockNumber())
 
-    // Obtener TODOS los eventos Transfer (no podemos filtrar por tokenId porque no está indexado)
-    const allEvents = await contractDerivative.getPastEvents('Transfer', {
-        fromBlock: validFromBlock,
-        toBlock: 'latest'
-    }) as TransferEventLog[]
+    // Besu tiene un límite de rango, así que consultamos en chunks
+    const CHUNK_SIZE = 1000
+    const allEventsRaw: any[] = []
 
+    // Calcular el bloque de inicio (últimos 10000 bloques o desde deployment/fromBlock)
+    const deploymentBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+    const validFromBlock = Math.max(fromBlock || deploymentBlock, 0)
+    const startBlock = Math.max(validFromBlock, latestBlock - 10000)
+
+    console.log(`getEventsFromDerivative: Querying from block ${startBlock} to ${latestBlock}`)
+
+    for (let fromBlockChunk = startBlock; fromBlockChunk <= latestBlock; fromBlockChunk += CHUNK_SIZE) {
+        const toBlock = Math.min(fromBlockChunk + CHUNK_SIZE - 1, latestBlock)
+
+        try {
+            const events = await contractDerivative.getPastEvents('Transfer', {
+                fromBlock: fromBlockChunk,
+                toBlock
+            })
+            allEventsRaw.push(...events)
+        } catch (chunkError) {
+            console.error(`Error fetching derivative chunk ${fromBlockChunk}-${toBlock}:`, chunkError)
+        }
+    }
+
+    const allEvents = allEventsRaw as TransferEventLog[]
     console.log(`getEventsFromDerivative: Found ${allEvents.length} total Transfer events`)
 
     // Filtrar manualmente por tokenId
@@ -200,11 +306,32 @@ async function getManufacturerBatchEvent(tokenId: number): Promise<EventTrace | 
     if (!web3 || !contractTracker) return null;
 
     try {
-        // Obtener todos los eventos BatchCreated
-        const allEvents = await contractTracker.getPastEvents('BatchCreated', {
-            fromBlock: Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0,
-            toBlock: 'latest'
-        }) as BatchCreatedEventLog[]
+        // Obtener el bloque actual
+        const latestBlock = Number(await web3.eth.getBlockNumber())
+
+        // Besu tiene un límite de rango, así que consultamos en chunks
+        const CHUNK_SIZE = 1000
+        const allEventsRaw: any[] = []
+
+        // Calcular el bloque de inicio (últimos 10000 bloques o desde deployment)
+        const deploymentBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+        const startBlock = Math.max(deploymentBlock, latestBlock - 10000)
+
+        for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+            const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+            try {
+                const events = await contractTracker.getPastEvents('BatchCreated', {
+                    fromBlock,
+                    toBlock
+                })
+                allEventsRaw.push(...events)
+            } catch (chunkError) {
+                console.error(`Error fetching batch chunk ${fromBlock}-${toBlock}:`, chunkError)
+            }
+        }
+
+        const allEvents = allEventsRaw as BatchCreatedEventLog[]
 
         // Buscar el evento que contiene este tokenId en derivativeIds
         const matchingEvent = allEvents.find(event => {
@@ -239,12 +366,33 @@ async function getPatientAdministrationEvent(tokenId: number, expectedIsBloodBag
     if (!web3 || !contractTracker) return null;
 
     try {
-        // Buscar el evento PatientAdministered específico para este tokenId
-        const events = await contractTracker.getPastEvents('PatientAdministered', {
-            filter: { tokenId: tokenId },
-            fromBlock: Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0,
-            toBlock: 'latest'
-        }) as PatientAdministeredEventLog[]
+        // Obtener el bloque actual
+        const latestBlock = Number(await web3.eth.getBlockNumber())
+
+        // Besu tiene un límite de rango, así que consultamos en chunks
+        const CHUNK_SIZE = 1000
+        const allEventsRaw: any[] = []
+
+        // Calcular el bloque de inicio (últimos 10000 bloques o desde deployment)
+        const deploymentBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+        const startBlock = Math.max(deploymentBlock, latestBlock - 10000)
+
+        for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+            const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+            try {
+                const events = await contractTracker.getPastEvents('PatientAdministered', {
+                    filter: { tokenId: tokenId },
+                    fromBlock,
+                    toBlock
+                })
+                allEventsRaw.push(...events)
+            } catch (chunkError) {
+                console.error(`Error fetching patient admin chunk ${fromBlock}-${toBlock}:`, chunkError)
+            }
+        }
+
+        const events = allEventsRaw as PatientAdministeredEventLog[]
 
         // Filtrar por isBloodBag para asegurar que coincida con el tipo esperado
         const matchingEvent = events.find(e => Boolean(e.returnValues.isBloodBag) === expectedIsBloodBag)
@@ -381,12 +529,34 @@ export async function getPatientAdministrations(hospitalAddress: string) {
 
     const administrations = []
 
-    // Obtener TODOS los eventos PatientAdministered
-    const allEvents = await contractTracker.getPastEvents('PatientAdministered', {
-        fromBlock: Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0,
-        toBlock: 'latest'
-    }) as PatientAdministeredEventLog[]
+    // Obtener el bloque actual
+    const latestBlock = Number(await web3.eth.getBlockNumber())
 
+    // Besu tiene un límite de rango, así que consultamos en chunks
+    const CHUNK_SIZE = 1000
+    const allEventsRaw: any[] = []
+
+    // Calcular el bloque de inicio (últimos 10000 bloques o desde deployment)
+    const deploymentBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+    const startBlock = Math.max(deploymentBlock, latestBlock - 10000)
+
+    console.log(`getPatientAdministrations: Querying from block ${startBlock} to ${latestBlock}`)
+
+    for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+        try {
+            const events = await contractTracker.getPastEvents('PatientAdministered', {
+                fromBlock,
+                toBlock
+            })
+            allEventsRaw.push(...events)
+        } catch (chunkError) {
+            console.error(`Error fetching patient admin chunk ${fromBlock}-${toBlock}:`, chunkError)
+        }
+    }
+
+    const allEvents = allEventsRaw as PatientAdministeredEventLog[]
     console.log(`getPatientAdministrations: Found ${allEvents.length} total PatientAdministered events`)
 
     // Filtrar manualmente por dirección del hospital
@@ -429,15 +599,38 @@ export async function getPatientAdministrations(hospitalAddress: string) {
  * @returns Registro de lotes creados por el fabricante
  */
 export async function getManufacturedBatches(manufacturerAddress: string) {
-    const { contractTracker } = getContracts();
-    if (!contractTracker) return [];
+    const { web3, contractTracker } = getContracts();
+    if (!contractTracker || !web3) return [];
 
     const batches = []
-    const events = await contractTracker.getPastEvents('BatchCreated', {
-        filter: { manufacturer: manufacturerAddress },
-        fromBlock: Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0,
-        toBlock: 'latest'
-    }) as BatchCreatedEventLog[]
+
+    // Obtener el bloque actual
+    const latestBlock = Number(await web3.eth.getBlockNumber())
+
+    // Besu tiene un límite de rango, así que consultamos en chunks
+    const CHUNK_SIZE = 1000
+    const allEventsRaw: any[] = []
+
+    // Calcular el bloque de inicio (últimos 10000 bloques o desde deployment)
+    const deploymentBlock = Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0
+    const startBlock = Math.max(deploymentBlock, latestBlock - 10000)
+
+    for (let fromBlock = startBlock; fromBlock <= latestBlock; fromBlock += CHUNK_SIZE) {
+        const toBlock = Math.min(fromBlock + CHUNK_SIZE - 1, latestBlock)
+
+        try {
+            const events = await contractTracker.getPastEvents('BatchCreated', {
+                filter: { manufacturer: manufacturerAddress },
+                fromBlock,
+                toBlock
+            })
+            allEventsRaw.push(...events)
+        } catch (chunkError) {
+            console.error(`Error fetching batches chunk ${fromBlock}-${toBlock}:`, chunkError)
+        }
+    }
+
+    const events = allEventsRaw as BatchCreatedEventLog[]
 
     for (const event of events) {
         batches.push({
