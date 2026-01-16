@@ -7,31 +7,42 @@ import Tooltip from "@/components/ui/Tooltip";
 import { truncateAddress, formatEther } from "@/lib/helpers";
 import { motion } from "framer-motion";
 
-const getRoleName = (roleNum: Number | null): string => {
+const getRoleName = (roleNum: Number | null, isAdmin: boolean): string => {
+  if (isAdmin) return "Administrador";
   if (roleNum === null) return "No registrado";
   switch (roleNum) {
     case 1:
-      return "Collector Center";
+      return "Centro de Donación";
     case 2:
-      return "Laboratory";
+      return "Laboratorio";
     case 3:
       return "Trader";
+    case 4:
+      return "Donante";
+    case 5:
+      return "No registrado";
     default:
       return "No registrado";
   }
 };
 
 const getRoleBadgeVariant = (
-  roleNum: Number | null
+  roleNum: Number | null,
+  isAdmin: boolean
 ): "pending" | "processing" | "completed" | "cancelled" => {
+  if (isAdmin) return "completed"; // Green for Admin
   if (roleNum === null) return "cancelled";
   switch (roleNum) {
     case 1:
-      return "processing"; // Blue for Collector Center
+      return "processing"; // Blue for Donation Center
     case 2:
       return "completed"; // Green for Laboratory
     case 3:
       return "pending"; // Yellow for Trader
+    case 4:
+      return "completed"; // Green for Donor
+    case 5:
+      return "cancelled"; // Red for Not registered
     default:
       return "cancelled";
   }
@@ -55,7 +66,7 @@ interface WalletInfoProps {
 }
 
 const WalletInfo: React.FC<WalletInfoProps> = ({ variant = "full" }) => {
-  const { account, network, role, web3 } = useWallet();
+  const { account, network, role, isAdmin, web3 } = useWallet();
   const [balance, setBalance] = useState<string>("0");
 
   useEffect(() => {
@@ -89,7 +100,7 @@ const WalletInfo: React.FC<WalletInfoProps> = ({ variant = "full" }) => {
             {truncateAddress(account, 4)}
           </span>
         </Tooltip>
-        <Badge status={getRoleBadgeVariant(role)} text={getRoleName(role)} variant="soft" />
+        <Badge status={getRoleBadgeVariant(role, isAdmin)} text={getRoleName(role, isAdmin)} variant="soft" />
       </motion.div>
     );
   }
@@ -109,7 +120,7 @@ const WalletInfo: React.FC<WalletInfoProps> = ({ variant = "full" }) => {
             </span>
           </Tooltip>
         </div>
-        <Badge status={getRoleBadgeVariant(role)} text={getRoleName(role)} variant="soft" />
+        <Badge status={getRoleBadgeVariant(role, isAdmin)} text={getRoleName(role, isAdmin)} variant="soft" />
       </div>
 
       <div className="flex items-center justify-between gap-4 pt-2 border-t border-blood-100">

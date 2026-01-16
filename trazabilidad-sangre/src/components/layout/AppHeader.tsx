@@ -1,25 +1,41 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import Logo from "../Logo";
 import MobileMenu from "./MobileMenu";
-import WalletInfo from "./WalletInfo";
+import ConnectWalletButton, { useWallet } from "../ConnectWalletButton";
 import { AppContainer } from "@/app/layout";
 import clsx from "clsx";
 
-const appMenuItems = [
-  { name: "Dashboard", path: "/all-role-grid" },
-  { name: "Marketplace", path: "/marketplace" },
-  { name: "Trazabilidad", path: "/trace" },
-  { name: "Extracciones", path: "/extraction" },
+const allMenuItems = [
+  { name: "Dashboard", path: "/all-role-grid", roles: [1, 2, 3, 4] }, // Todos
+  { name: "Marketplace", path: "/marketplace", roles: [2, 3] }, // Laboratorio, Trader
+  { name: "Trazabilidad", path: "/trace", roles: [1, 2, 3, 4] }, // Todos
 ];
 
 const AppHeader: React.FC = () => {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { role, isAdmin } = useWallet();
+
+  // Filtrar menús según el rol del usuario
+  const appMenuItems = useMemo(() => {
+    // Si es admin, no filtrar (mostrar todos o su menú personalizado)
+    if (isAdmin) {
+      return allMenuItems;
+    }
+
+    // Si no tiene rol, no mostrar menús
+    if (!role || role === 5) {
+      return [];
+    }
+
+    // Filtrar menús según el rol
+    return allMenuItems.filter(item => item.roles.includes(role));
+  }, [role, isAdmin]);
 
   return (
     <header className="sticky top-0 z-40 bg-gradient-to-r from-blood-600 to-blockchain-600 text-white shadow-lg">
@@ -53,11 +69,9 @@ const AppHeader: React.FC = () => {
             </nav>
           </div>
 
-          {/* Right Side - Wallet Info */}
+          {/* Right Side - Wallet Button */}
           <div className="flex items-center gap-4">
-            <div className="hidden lg:block">
-              <WalletInfo variant="compact" />
-            </div>
+            <ConnectWalletButton />
 
             {/* Mobile menu button */}
             <button

@@ -1,10 +1,16 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { AppContainer } from "../app/layout";
 import Container from "./ui/Container";
 import Grid from "./ui/Grid";
+import { useWallet } from "./ConnectWalletButton";
+import { truncateAddress } from "@/lib/helpers";
 
 const Footer = () => {
+  const { network } = useWallet();
+
   return (
     <footer className="bg-gradient-to-br from-blood-700 to-blockchain-700 text-white mt-16">
       <Container>
@@ -73,6 +79,50 @@ const Footer = () => {
               </Link>
             </div>
           </Grid>
+        </div>
+
+        {/* Contract Information */}
+        <div className="border-t border-white/20 py-6">
+          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-medical-300 mb-3 flex items-center gap-2">
+              <span>🔗</span>
+              Información de Contratos
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-white/80">
+              <div className="flex flex-col gap-1">
+                <span className="text-white/60">Red Activa:</span>
+                <span className="font-mono font-semibold text-white">
+                  {network || "No conectado"}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-white/60">BloodTracker:</span>
+                <span className="font-mono text-white">
+                  {truncateAddress(process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS || "")}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-white/60">BloodDonation:</span>
+                <span className="font-mono text-white">
+                  {truncateAddress(process.env.NEXT_PUBLIC_BLD_DONATION_CONTRACT_ADDRESS || "")}
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-white/80 mt-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-white/60">BloodDerivative:</span>
+                <span className="font-mono text-white">
+                  {truncateAddress(process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS || "")}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-white/60">Chain ID:</span>
+                <span className="font-mono font-semibold text-white">
+                  {process.env.NEXT_PUBLIC_CHAIN_ID || "N/A"}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Bottom Section */}

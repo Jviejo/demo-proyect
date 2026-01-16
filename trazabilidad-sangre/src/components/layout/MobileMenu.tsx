@@ -11,6 +11,7 @@ import clsx from "clsx";
 interface MenuItem {
   name: string;
   path: string;
+  roles?: number[]; // Opcional para compatibilidad
 }
 
 interface MobileMenuProps {

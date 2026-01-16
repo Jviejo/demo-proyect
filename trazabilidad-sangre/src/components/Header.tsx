@@ -265,44 +265,6 @@ const Header = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Wallet Info */}
-              {account && (
-                <div className="flex items-center gap-3 ml-4">
-                  {/* Role Badge */}
-                  <Tooltip content={getRoleName(role)} position="bottom">
-                    <div>
-                      <Badge status={getRoleBadgeVariant(role)} variant="solid">
-                        {getRoleName(role)}
-                      </Badge>
-                    </div>
-                  </Tooltip>
-
-                  {/* Network Indicator */}
-                  <Tooltip content={getNetworkName(network)} position="bottom">
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded-full text-xs">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <span className="text-gray-700 font-medium">
-                        {network === "31337" ? "Local" : "Live"}
-                      </span>
-                    </div>
-                  </Tooltip>
-
-                  {/* Balance */}
-                  <Tooltip content="Balance de tu wallet" position="bottom">
-                    <div className="px-3 py-1 bg-primary-50 rounded-full text-sm font-semibold text-primary-700">
-                      {balance} ETH
-                    </div>
-                  </Tooltip>
-
-                  {/* Address */}
-                  <Tooltip content={account} position="bottom">
-                    <div className="px-3 py-1 bg-gray-100 rounded-full text-sm font-mono text-gray-700">
-                      {truncateAddress(account, 4, 4)}
-                    </div>
-                  </Tooltip>
-                </div>
-              )}
-
               <ConnectWalletButton />
             </nav>
           </div>
