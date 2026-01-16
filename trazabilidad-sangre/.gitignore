@@ -69,3 +69,7 @@ anvil-state.json
 
 # Configuración local de Claude
 .claude/settings.local.json
+
+# Scripts temporales
+build.ps1
+powershell-build.log
