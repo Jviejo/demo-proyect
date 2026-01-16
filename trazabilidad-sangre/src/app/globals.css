@@ -368,33 +368,218 @@ h6 {
   margin-right: 10px;
 }
 
-.menu-icon {
-  /* border: solid 1px red; */
-  display: inline-block;
+/* Wallet Button Container */
+.wallet-button-container {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: linear-gradient(90deg, #241130, #15011d);
+  border-radius: 15px;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Wallet Button Main */
+.wallet-button-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 10px 12px 10px 20px !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  flex: 1;
+}
+
+.wallet-button-main:hover {
+  background: rgba(50, 205, 50, 0.1) !important;
+}
+
+.wallet-address {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+/* Wallet Dropdown Trigger */
+.wallet-dropdown-trigger {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+  padding: 10px 12px;
   cursor: pointer;
-}
-
-.menu-line {
-  width: 25px;
-  height: 2px;
-  background-color: rgb(255, 255, 255);
-  margin-top: 5px;
-  margin-right: 5px;
-  margin-left: 10px;
-}
-
-.feature-wallet-logout {
-  display: block;
-  /* border: solid 1px rgb(221, 255, 0); */
-  position: relative;
-  padding: 12px 50px;
-  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: white;
-  background-color: #241130;
+  height: 100%;
+}
+
+.wallet-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.wallet-dropdown-trigger:active {
+  transform: translateY(0);
+}
+
+.dropdown-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: currentColor;
+}
+
+.dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Wallet Container */
+.dropdown-wallet {
+  position: relative;
+}
+
+/* Dropdown Content - Enhanced Glassmorphism Style */
+.dropdown-wallet-content {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  min-width: 220px;
+  background: linear-gradient(135deg,
+    rgba(36, 17, 48, 0.98) 0%,
+    rgba(21, 1, 29, 0.98) 100%);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 4px 12px rgba(80, 50, 145, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  z-index: 9999;
+  animation: dropdownSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dropdown-wallet-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(50, 205, 50, 0.6) 50%,
+    transparent 100%);
+  opacity: 0.8;
+}
+
+@keyframes dropdownSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Logout Button - Enhanced Design */
+.feature-wallet-logout {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-wallet-logout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    rgba(220, 38, 38, 0.15) 0%,
+    rgba(239, 68, 68, 0.25) 50%,
+    rgba(248, 113, 113, 0.15) 100%);
+  transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.feature-wallet-logout::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.feature-wallet-logout:hover::before {
+  left: 0;
+}
+
+.feature-wallet-logout:hover::after {
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .feature-wallet-logout:hover {
-  background: linear-gradient(90deg, #15011d, #32cd32);
+  color: #fecaca;
+  padding-left: 26px;
+  background: rgba(220, 38, 38, 0.08);
+  transform: translateX(2px);
+}
+
+.feature-wallet-logout:active {
+  transform: scale(0.96) translateX(2px);
+  background: rgba(220, 38, 38, 0.15);
+}
+
+.logout-icon {
+  color: #ef4444;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.3));
+}
+
+.feature-wallet-logout:hover .logout-icon {
+  transform: translateX(4px) rotate(-5deg);
+  color: #fca5a5;
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6));
+}
+
+/* Legacy styles - keep for backwards compatibility */
+.menu-icon {
+  display: none;
+}
+
+.menu-line {
+  display: none;
 }
 
 /* GetWalletModal */
