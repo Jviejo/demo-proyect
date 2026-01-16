@@ -63,4 +63,99 @@ seed-hospital-manufacturer-tsc:;
 	@echo "NOTA: Asegúrate de tener un Centro de Donación y Laboratorio registrados y aprobados"
 	forge script script/SeedHospitalManufacturer.s.sol:SeedHospitalManufacturer --legacy --rpc-url $(TRIAS_RPC_URL) --broadcast -vvvv
 
+# ============================================
+# BESU CODECRYPTO (Chain ID: 81234)
+# ============================================
+
+# Verificar conexión a Besu
+verify-besu:;
+	@echo "Verificando conexión a Besu CodeCrypto..."
+	cast block latest --rpc-url $(BESU_RPC_URL)
+	@echo "\nChain ID:"
+	cast chain-id --rpc-url $(BESU_RPC_URL)
+
+# Deployment de contratos en Besu
+deploy-besu-admin:;
+	@echo "Desplegando contratos en Besu CodeCrypto..."
+	INITIAL_ADMIN_ADDRESS=$(BESU_ADMIN_ADDRESS) forge script script/DeployBloodWithAdmin.s.sol:DeployBloodWithAdmin \
+		--rpc-url $(BESU_RPC_URL) \
+		--private-key $(BESU_PRIVATE_KEY) \
+		--broadcast \
+		-vvv
+
+# Seed Data para Besu
+seed-data-besu:;
+	@echo "Generando datos de prueba en Besu..."
+	forge script script/SeedData.s.sol:SeedData \
+		--rpc-url $(BESU_RPC_URL) \
+		--private-key $(BESU_PRIVATE_KEY) \
+		--broadcast \
+		-vvvv
+
+# Seed Hospital & Manufacturer para Besu
+seed-hospital-manufacturer-besu:;
+	@echo "Generando escenario completo Hospital & Manufacturer en Besu..."
+	@echo "NOTA: Asegúrate de tener un Centro de Donación y Laboratorio registrados y aprobados"
+	forge script script/SeedHospitalManufacturer.s.sol:SeedHospitalManufacturer \
+		--rpc-url $(BESU_RPC_URL) \
+		--private-key $(BESU_PRIVATE_KEY) \
+		--broadcast \
+		-vvvv
+
+# ============================================
+# SEED COMPLETO - Batería completa de datos
+# ============================================
+
+# Generar wallets para testing
+generate-wallets:;
+	@echo "Generando wallets de testing..."
+	@echo "Este comando creará 10 wallets determinísticas con claves privadas"
+	@echo "Las wallets se guardarán en foundry/.clientWallets"
+	@echo ""
+	cd scripts && node generateWallets.js
+	@echo ""
+	@echo "✅ Wallets generadas exitosamente!"
+	@echo ""
+	@echo "⚠️  PRÓXIMOS PASOS:"
+	@echo "1. Abrir el archivo foundry/.clientWallets"
+	@echo "2. Copiar manualmente las addresses y privateKeys al script SeedDataComplete.s.sol"
+	@echo "3. Ejecutar: make seed-complete-besu (o make seed-complete-anvil para testing)"
+
+# Seed completo en Besu
+seed-complete-besu:;
+	@echo "=========================================="
+	@echo "SEED COMPLETO - Besu CodeCrypto"
+	@echo "=========================================="
+	@echo ""
+	@echo "Este script ejecutará:"
+	@echo "  - Funding de 10 wallets (1000 ETH c/u)"
+	@echo "  - Registro de todas las wallets con sus roles"
+	@echo "  - Creación de 150 donaciones"
+	@echo "  - Procesamiento de 20 derivados"
+	@echo "  - Configuración de marketplace"
+	@echo ""
+	@echo "⏱️  Duración estimada: 5-10 minutos"
+	@echo ""
+	@read -p "Presiona Enter para continuar..."
+	forge script script/SeedDataComplete.s.sol:SeedDataComplete \
+		--rpc-url $(BESU_RPC_URL) \
+		--private-key $(BESU_PRIVATE_KEY) \
+		--broadcast \
+		-vvvv
+
+# Seed completo en Anvil (para testing)
+seed-complete-anvil:;
+	@echo "=========================================="
+	@echo "SEED COMPLETO - Anvil Local"
+	@echo "=========================================="
+	@echo ""
+	@echo "Este script ejecutará el seed completo en Anvil local"
+	@echo "NOTA: Asegúrate de que Anvil esté corriendo (anvil --host 0.0.0.0)"
+	@echo ""
+	forge script script/SeedDataComplete.s.sol:SeedDataComplete \
+		--rpc-url $(ANVIL_RPC_URL) \
+		--private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+		--broadcast \
+		-vvvv
+
 
