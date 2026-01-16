@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
+import { abi as abiTracker } from "@/lib/contracts/BloodTracker";
 import { useWallet } from "./ConnectWalletButton";
 import { useRouter } from "next/navigation";
 import StepIndicator from "./registro/StepIndicator";

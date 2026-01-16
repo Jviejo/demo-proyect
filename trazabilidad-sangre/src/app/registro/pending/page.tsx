@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@/components/ConnectWalletButton";
-import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
+import { abi as abiTracker } from "@/lib/contracts/BloodTracker";
 import Button from "@/components/ui/Button";
 
 const PendingApprovalPage = () => {

@@ -18,7 +18,7 @@ import Image from "next/image";
 import PendingApprovalComponent from "./ApprovalStates/PendingApprovalComponent";
 import RejectedComponent from "./ApprovalStates/RejectedComponent";
 import RevokedComponent from "./ApprovalStates/RevokedComponent";
-import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
+import { abi as abiTracker } from "@/lib/contracts/BloodTracker";
 
 const rolesData = [
   { name: "Company", img: "/Blood_cell512px.png", path: "/role-registro" },

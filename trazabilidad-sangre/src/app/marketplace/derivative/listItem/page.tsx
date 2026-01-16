@@ -3,8 +3,8 @@ import styles from "@/components/Registro.module.css"
 import { useEffect, useState } from "react";
 import { Wallet } from "@/components/ConnectWalletButton";
 import { useWallet } from "@/components/ConnectWalletButton";
-import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
-import { abi as abiDerivative } from "@/../../src/lib/contracts/BloodDerivative";
+import { abi as abiTracker } from "@/lib/contracts/BloodTracker";
+import { abi as abiDerivative } from "@/lib/contracts/BloodDerivative";
 import { getDerivativeTypeFromNumber } from "@/components/Marketplace";
 import Web3 from "web3";
 import { abi } from "@/lib/contracts/BloodDonation";

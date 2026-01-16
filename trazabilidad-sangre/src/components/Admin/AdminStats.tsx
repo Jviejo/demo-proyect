@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useWallet } from "@/components/ConnectWalletButton";
-import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
+import { abi as abiTracker } from "@/lib/contracts/BloodTracker";
 
 interface StatsData {
   pending: number;

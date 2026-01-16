@@ -2,9 +2,9 @@
 
 import { useWallet } from './ConnectWalletButton';
 import { useEffect, useState, useCallback } from 'react';
-import { abi as abiTracker } from '@/../../src/lib/contracts/BloodTracker';
-import { abi as abiDerivative } from '@/../../src/lib/contracts/BloodDerivative';
-import { abi as abiDonation } from '@/../../src/lib/contracts/BloodDonation';
+import { abi as abiTracker } from '@/lib/contracts/BloodTracker';
+import { abi as abiDerivative } from '@/lib/contracts/BloodDerivative';
+import { abi as abiDonation } from '@/lib/contracts/BloodDonation';
 import { FaFilter, FaPlus } from 'react-icons/fa';
 import Link from 'next/link';
 import { AppContainer } from '@/app/layout';
