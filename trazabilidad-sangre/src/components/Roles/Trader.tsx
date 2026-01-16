@@ -47,7 +47,7 @@ const navigationCards = [
 ]
 
 function Trader() {
-    const { account, web3, contractDerivative, contractTracker } = useWallet()
+    const { account, web3, contractDerivative, contractTracker, contractDonation } = useWallet()
     const [balance, setBalance] = useState<string>("0")
     const [purchases, setPurchases] = useState<PurchaseInfo[]>([])
     const [inventory, setInventory] = useState<number>(0)
@@ -62,20 +62,20 @@ function Trader() {
 
     // Obtener compras realizadas por el trader
     async function fetchPurchases() {
-        if (!contractDerivative || !contractTracker || !account) return []
+        if (!contractDerivative || !contractTracker || !account || !web3) return []
 
         try {
             const arrPurchases: PurchaseInfo[] = []
 
-            // Obtener todos los eventos Transfer donde 'to' es el trader actual
-            const transferEvents = await contractDerivative.getPastEvents('Transfer', {
+            // Obtener todos los eventos Transfer del contrato de derivados
+            const transferEventsDerivative = await contractDerivative.getPastEvents('Transfer', {
                 filter: { to: account },
                 fromBlock: 0,
                 toBlock: 'latest'
             })
 
-            // Para cada evento, verificar si fue una compra (no un mint)
-            for (const event of transferEvents) {
+            // Procesar transferencias de derivados
+            for (const event of transferEventsDerivative) {
                 const tokenId = Number(event.returnValues.tokenId)
                 const from = String(event.returnValues.from)
 
@@ -89,12 +89,12 @@ function Trader() {
                         // Obtener eventos para info adicional
                         const events = await getEventsFromDerivative(tokenId)
                         const purchaseEvent = events.find(e =>
-                            web3!.utils.toChecksumAddress(e.owner) === web3!.utils.toChecksumAddress(account)
+                            web3.utils.toChecksumAddress(e.owner) === web3.utils.toChecksumAddress(account)
                         ) || events[events.length - 1]
 
                         // Obtener info de la transacción
                         const txHash = event.transactionHash
-                        const tx = await web3!.eth.getTransaction(txHash)
+                        const tx = await web3.eth.getTransaction(txHash)
                         const price = BigInt(tx.value || 0)
 
                         arrPurchases.push({
@@ -107,7 +107,48 @@ function Trader() {
                             transactionHash: txHash
                         })
                     } catch (error) {
-                        console.error(`Error processing token ${tokenId}:`, error)
+                        console.error(`Error processing derivative token ${tokenId}:`, error)
+                    }
+                }
+            }
+
+            // Obtener eventos del contrato de donaciones (bolsas completas)
+            if (contractDonation) {
+                const transferEventsDonation = await contractDonation.getPastEvents('Transfer', {
+                    filter: { to: account },
+                    fromBlock: 0,
+                    toBlock: 'latest'
+                })
+
+                // Procesar transferencias de bolsas completas
+                for (const event of transferEventsDonation) {
+                    const tokenId = Number(event.returnValues.tokenId)
+                    const from = String(event.returnValues.from)
+
+                    // Si 'from' no es address(0), entonces es una transferencia (compra)
+                    if (from !== '0x0000000000000000000000000000000000000000') {
+                        try {
+                            // Obtener info de la transacción
+                            const txHash = event.transactionHash
+                            const tx = await web3.eth.getTransaction(txHash)
+                            const price = BigInt(tx.value || 0)
+
+                            // Obtener el bloque para la fecha
+                            const block = await web3.eth.getBlock(event.blockNumber)
+                            const purchaseDate = new Date(Number(block.timestamp) * 1000)
+
+                            arrPurchases.push({
+                                tokenId,
+                                tokenIdOrigin: tokenId, // Para bolsas completas, tokenIdOrigin es el mismo
+                                derivativeType: 0, // 0 = Bolsa Completa
+                                purchaseDate,
+                                price,
+                                seller: from,
+                                transactionHash: txHash
+                            })
+                        } catch (error) {
+                            console.error(`Error processing blood bag token ${tokenId}:`, error)
+                        }
                     }
                 }
             }
@@ -127,8 +168,19 @@ function Trader() {
         if (!contractDerivative || !account) return 0
 
         try {
-            const balance = await contractDerivative.methods.balanceOf(account).call()
-            return Number(balance)
+            let totalBalance = 0
+
+            // Balance de derivados
+            const derivativeBalance = await contractDerivative.methods.balanceOf(account).call()
+            totalBalance += Number(derivativeBalance)
+
+            // Balance de bolsas completas
+            if (contractDonation) {
+                const donationBalance = await contractDonation.methods.balanceOf(account).call()
+                totalBalance += Number(donationBalance)
+            }
+
+            return totalBalance
         } catch (error) {
             console.error("Error fetching inventory:", error)
             return 0
@@ -202,7 +254,7 @@ function Trader() {
         if (account && web3) {
             loadData()
         }
-    }, [account, web3, contractDerivative, contractTracker])
+    }, [account, web3, contractDerivative, contractTracker, contractDonation])
 
     const chartData = preparePurchasesChartData(purchases)
 
@@ -395,14 +447,15 @@ function Trader() {
                             >
                                 {/* Icon and Product */}
                                 <div className="flex items-center gap-2 min-w-[160px]">
+                                    {purchase.derivativeType === 0 && <div className="text-4xl">🩸</div>}
                                     {purchase.derivativeType === Derivative.Plasma && <PlasmaIcon />}
                                     {purchase.derivativeType === Derivative.Erythrocytes && <ErythrocytesIcon />}
                                     {purchase.derivativeType === Derivative.Platelets && <PlateletsIcon />}
                                     <div>
                                         <h3 className="text-base font-bold text-slate-900">
-                                            {getDerivativeTypeName(purchase.derivativeType)} #{purchase.tokenId}
+                                            {purchase.derivativeType === 0 ? 'Bolsa Completa' : getDerivativeTypeName(purchase.derivativeType)} #{purchase.tokenId}
                                         </h3>
-                                        <Badge status="completed" variant="solid" className="mt-1 scale-75 origin-left">
+                                        <Badge status="completed" style="solid" className="mt-1 scale-75 origin-left">
                                             Completado
                                         </Badge>
                                     </div>

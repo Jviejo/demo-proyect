@@ -40,6 +40,26 @@ const roles = [
     borderColor: "border-blockchain-200",
     textColor: "text-blockchain-700",
   },
+  {
+    id: "Hospital",
+    name: "Hospital",
+    description: "Centro médico que administra sangre y derivados a pacientes",
+    icon: "🏥",
+    color: "from-medical-500 to-medical-700",
+    bgColor: "bg-medical-50",
+    borderColor: "border-medical-200",
+    textColor: "text-medical-700",
+  },
+  {
+    id: "Manufacturer",
+    name: "Manufacturer",
+    description: "Productor de cosméticos y productos biotecnológicos",
+    icon: "🧴",
+    color: "from-blockchain-500 to-success-500",
+    bgColor: "bg-success-50",
+    borderColor: "border-success-200",
+    textColor: "text-success-700",
+  },
 ];
 
 const RoleSelection: React.FC<RoleSelectionProps> = ({ selectedRole, onRoleSelect }) => {

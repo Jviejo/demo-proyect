@@ -52,4 +52,15 @@ seed-data-tsc:;
 	@echo "Generando datos de prueba en Trias Testnet..."
 	forge script script/SeedData.s.sol:SeedData --legacy --rpc-url $(TRIAS_RPC_URL) --account trias-testnet --password-file .password --broadcast -vvvv
 
+# Seed Data Hospital & Manufacturer - Escenario completo de testing
+seed-hospital-manufacturer-anvil:;
+	@echo "Generando escenario completo Hospital & Manufacturer en Anvil..."
+	@echo "NOTA: Asegúrate de tener un Centro de Donación y Laboratorio registrados y aprobados"
+	forge script script/SeedHospitalManufacturer.s.sol:SeedHospitalManufacturer --rpc-url $(ANVIL_RPC_URL) --broadcast -vvvv
+
+seed-hospital-manufacturer-tsc:;
+	@echo "Generando escenario completo Hospital & Manufacturer en Trias Testnet..."
+	@echo "NOTA: Asegúrate de tener un Centro de Donación y Laboratorio registrados y aprobados"
+	forge script script/SeedHospitalManufacturer.s.sol:SeedHospitalManufacturer --legacy --rpc-url $(TRIAS_RPC_URL) --broadcast -vvvv
+
 

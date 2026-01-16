@@ -30,19 +30,19 @@ const Register = () => {
   // Validación de acceso: Solo usuarios sin rol pueden acceder al registro
   useEffect(() => {
     if (!account) {
-      // Si no hay wallet conectada, esperar
+      // Si no hay wallet conectada, permitir ver el formulario
       setIsCheckingAccess(false);
       return;
     }
 
-    // Si el role está determinado (no es null)
-    if (role !== null) {
-      // Admin: redirigir a panel de admin
-      if (isAdmin) {
-        router.push("/admin/approval-requests");
-        return;
-      }
+    // PRIMERO: Verificar si es admin (independiente del rol)
+    if (isAdmin) {
+      router.push("/admin/approval-requests");
+      return;
+    }
 
+    // SEGUNDO: Si el role está determinado (no es null)
+    if (role !== null) {
       // Si tiene rol de empresa (1, 2, 3) o donante (4), redirigir a all-role-grid
       if (role !== 5) {
         router.push("/all-role-grid");
@@ -52,6 +52,7 @@ const Register = () => {
       // Si role === 5 (No registrado), permitir acceso
       setIsCheckingAccess(false);
     }
+    // Si role es null y no es admin, seguir verificando (no hacer nada, mantener isCheckingAccess en true)
   }, [account, role, isAdmin, router]);
 
   const canGoNext = () => {
@@ -144,16 +145,22 @@ const Register = () => {
       let roleNum;
       switch (companyRole) {
         case "Collector Center":
-          roleNum = 1;
+          roleNum = 1; // DONATION_CENTER
           break;
         case "Laboratory":
-          roleNum = 2;
+          roleNum = 2; // LABORATORY
           break;
         case "Trader":
-          roleNum = 3;
+          roleNum = 3; // TRADER
+          break;
+        case "Hospital":
+          roleNum = 4; // HOSPITAL
+          break;
+        case "Manufacturer":
+          roleNum = 5; // MANUFACTURER
           break;
         default:
-          roleNum = 0;
+          roleNum = 0; // NO_REGISTERED (esto causará error)
           break;
       }
 

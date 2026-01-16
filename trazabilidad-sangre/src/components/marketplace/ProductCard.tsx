@@ -16,13 +16,18 @@ export interface ProductCardProps {
   price: string;
   seller: string;
   image: string;
-  onBuy?: (tokenId: number, price: string) => void;
+  onBuy?: (tokenId: number, price: string, tokenAddress: string) => void;
   onDetails?: (tokenId: number) => void;
   isSeller?: boolean;
-  onCancel?: (tokenId: number) => void;
+  onCancel?: (tokenId: number, tokenAddress: string) => void;
 }
 
 const derivativeTypeColors: Record<string, { bg: string; text: string; border: string }> = {
+  BLOOD_BAG: {
+    bg: 'bg-blood-100',
+    text: 'text-blood-800',
+    border: 'border-blood-300',
+  },
   PLASMA: {
     bg: 'bg-amber-100',
     text: 'text-amber-800',
@@ -146,7 +151,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 variant="danger"
                 size="sm"
                 fullWidth
-                onClick={() => onCancel?.(tokenId)}
+                onClick={() => onCancel?.(tokenId, tokenAddress)}
               >
                 Cancelar
               </Button>
@@ -165,7 +170,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 variant="success"
                 size="sm"
                 fullWidth
-                onClick={() => onBuy?.(tokenId, price)}
+                onClick={() => onBuy?.(tokenId, price, tokenAddress)}
               >
                 Comprar
               </Button>

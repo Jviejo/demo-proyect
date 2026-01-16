@@ -1,7 +1,7 @@
 'use client';
 
 import { Derivative, EventTrace } from "@/lib/types";
-import { formatDateTime, truncateAddress, getDerivativeTypeName, getEventTypeName } from "@/lib/helpers";
+import { formatDateTime, truncateAddress, getDerivativeTypeName, getEventTypeName, getProductTypeName } from "@/lib/helpers";
 import { motion } from "framer-motion";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useEffect, useState } from "react";
@@ -23,7 +23,11 @@ const eventIcons: Record<string, string> = {
     'Purchase': '🛒',
     'Listed': '📋',
     'Unlisted': '❌',
-    'Completed': '✅'
+    'Completed': '✅',
+    'Generation': '✨',
+    'Consumation': '⚗️',
+    'PatientAdministration': '🏥',
+    'ManufacturerBatch': '🧪'
 };
 
 // Mapeo de colores de borde por tipo de evento
@@ -35,7 +39,11 @@ const eventBorderColors: Record<string, string> = {
     'Purchase': 'border-l-yellow-500',
     'Listed': 'border-l-indigo-500',
     'Unlisted': 'border-l-gray-500',
-    'Completed': 'border-l-green-600'
+    'Completed': 'border-l-green-600',
+    'Generation': 'border-l-blue-500',
+    'Consumation': 'border-l-purple-500',
+    'PatientAdministration': 'border-l-teal-500',
+    'ManufacturerBatch': 'border-l-purple-600'
 };
 
 export function TraceCard({ product, tokenId, trace, index = 0 }: TraceCardProps) {
@@ -127,6 +135,42 @@ export function TraceCard({ product, tokenId, trace, index = 0 }: TraceCardProps
                     <span className="text-gray-600 dark:text-gray-400">Ubicación:</span>{' '}
                     <span>{trace.location}</span>
                 </p>
+
+                {/* Información de paciente (solo para PatientAdministration) */}
+                {trace.event === 'PatientAdministration' && (
+                    <>
+                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <p className="text-gray-700 dark:text-gray-300 mb-1">
+                                <span className="text-gray-600 dark:text-gray-400">ID Paciente:</span>{' '}
+                                <span className="font-medium font-mono">{trace.patientId}</span>
+                            </p>
+                            <p className="text-gray-700 dark:text-gray-300">
+                                <span className="text-gray-600 dark:text-gray-400">Razón Médica:</span>{' '}
+                                <span className="font-medium">{trace.medicalReason}</span>
+                            </p>
+                        </div>
+                    </>
+                )}
+
+                {/* Información de lote manufacturado (solo para ManufacturerBatch) */}
+                {trace.event === 'ManufacturerBatch' && (
+                    <>
+                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <p className="text-gray-700 dark:text-gray-300 mb-1">
+                                <span className="text-gray-600 dark:text-gray-400">ID Lote:</span>{' '}
+                                <span className="font-medium font-mono">#{trace.batchId}</span>
+                            </p>
+                            <p className="text-gray-700 dark:text-gray-300 mb-2">
+                                <span className="text-gray-600 dark:text-gray-400">Producto:</span>{' '}
+                                <span className="font-medium">{trace.productType ? getProductTypeName(trace.productType) : 'N/A'}</span>
+                            </p>
+                            <p className="text-gray-700 dark:text-gray-300 text-xs">
+                                <span className="text-gray-600 dark:text-gray-400">Derivados utilizados:</span>{' '}
+                                <span className="font-mono">{trace.derivativeIds?.join(', ')}</span>
+                            </p>
+                        </div>
+                    </>
+                )}
 
                 {/* Block number discreto */}
                 <p className="text-xs text-gray-500 dark:text-gray-500">

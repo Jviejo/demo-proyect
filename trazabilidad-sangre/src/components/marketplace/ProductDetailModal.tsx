@@ -20,7 +20,7 @@ export interface ProductDetailModalProps {
     seller: string;
     image: string;
   } | null;
-  onConfirmPurchase?: (tokenId: number, price: string) => Promise<void>;
+  onConfirmPurchase?: (tokenId: number, price: string, tokenAddress: string) => Promise<void>;
   isOwnProduct?: boolean;
 }
 
@@ -32,6 +32,10 @@ interface TraceEvent {
 }
 
 const derivativeTypeInfo: Record<string, { color: string; description: string }> = {
+  BLOOD_BAG: {
+    color: 'text-blood-600',
+    description: 'Unidad completa de sangre donada lista para procesamiento o transfusión.',
+  },
   PLASMA: {
     color: 'text-yellow-600',
     description: 'Componente líquido de la sangre que contiene proteínas y nutrientes esenciales.',
@@ -118,7 +122,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
     setIsLoading(true);
     try {
-      await onConfirmPurchase(product.tokenId, product.price);
+      await onConfirmPurchase(product.tokenId, product.price, product.tokenAddress);
       onClose();
     } catch (error) {
       console.error('Error purchasing product:', error);

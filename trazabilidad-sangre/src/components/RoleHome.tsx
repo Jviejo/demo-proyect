@@ -5,6 +5,8 @@ import { useWallet } from "./ConnectWalletButton";
 import DonationCenter from "./Roles/DonationCenter";
 import Laboratory from "./Roles/Laboratory";
 import Trader from "./Roles/Trader";
+import Hospital from "./Roles/Hospital";
+import Manufacturer from "./Roles/Manufacturer";
 import { Spinner } from "./Spinner";
 import { useRouter } from "next/navigation";
 import Donor from "./Roles/Donor";
@@ -62,8 +64,8 @@ const RolesGrid = () => {
       return <Spinner />;
     }
 
-    // Si es una empresa (rol 1, 2, 3), verificar status de aprobación
-    if (role === 1 || role === 2 || role === 3) {
+    // Si es una empresa (rol 1-5), verificar status de aprobación
+    if (role >= 1 && role <= 5) {
       // RequestStatus: NO_REQUEST=0, PENDING=1, APPROVED=2, REJECTED=3, REVOKED=4
       switch (companyStatus) {
         case 1: // PENDING
@@ -73,6 +75,8 @@ const RolesGrid = () => {
           if (role === 1) return <DonationCenter />;
           if (role === 2) return <Laboratory />;
           if (role === 3) return <Trader />;
+          if (role === 4) return <Hospital />;
+          if (role === 5) return <Manufacturer />;
           break;
         case 3: // REJECTED
           return <RejectedComponent />;

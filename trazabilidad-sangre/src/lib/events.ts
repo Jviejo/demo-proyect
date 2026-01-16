@@ -4,7 +4,7 @@ import { Web3 } from "web3"
 import { abi as abiTracker } from "./contracts/BloodTracker"
 import { abi as abiDonation } from "./contracts/BloodDonation"
 import { abi as abiDerivative } from "./contracts/BloodDerivative"
-import { Address, DonationEventLog, EventTrace, EventType, TransferEventLog } from "./types"
+import { Address, DonationEventLog, EventTrace, EventType, TransferEventLog, PatientAdministeredEventLog, BatchCreatedEventLog } from "./types"
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -187,6 +187,93 @@ export async function getEventsFromDerivative(tokenId: number, fromBlock: number
 }
 
 /**
+ * Obtiene el evento PatientAdministered de un tokenId específico
+ * @param tokenId Id del token (donación o derivado)
+ * @param isBloodBag Si es una bolsa completa o derivado
+ */
+/**
+ * Obtiene el evento BatchCreated si un derivado fue usado en un lote
+ * @param tokenId Id del derivado
+ */
+async function getManufacturerBatchEvent(tokenId: number): Promise<EventTrace | null> {
+    const { web3, contractTracker } = getContracts();
+    if (!web3 || !contractTracker) return null;
+
+    try {
+        // Obtener todos los eventos BatchCreated
+        const allEvents = await contractTracker.getPastEvents('BatchCreated', {
+            fromBlock: Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0,
+            toBlock: 'latest'
+        }) as BatchCreatedEventLog[]
+
+        // Buscar el evento que contiene este tokenId en derivativeIds
+        const matchingEvent = allEvents.find(event => {
+            const derivativeIds = event.returnValues.derivativeIds.map(id => Number(id))
+            return derivativeIds.includes(tokenId)
+        })
+
+        if (!matchingEvent) return null;
+
+        // Obtener información del manufacturer
+        const { name, location } = await contractTracker.methods.companies(matchingEvent.returnValues.manufacturer).call()
+
+        return {
+            blockNumber: Number(matchingEvent.blockNumber),
+            event: EventType.ManufacturerBatch,
+            owner: String(matchingEvent.returnValues.manufacturer) as Address,
+            name: name,
+            location: location,
+            timestamp: new Date(Number(matchingEvent.returnValues.timestamp) * 1000),
+            batchId: Number(matchingEvent.returnValues.batchId),
+            productType: String(matchingEvent.returnValues.productType),
+            derivativeIds: matchingEvent.returnValues.derivativeIds.map(id => Number(id))
+        }
+    } catch (error) {
+        console.error(`Error fetching manufacturer batch for derivative ${tokenId}:`, error)
+        return null
+    }
+}
+
+async function getPatientAdministrationEvent(tokenId: number, expectedIsBloodBag: boolean): Promise<EventTrace | null> {
+    const { web3, contractTracker } = getContracts();
+    if (!web3 || !contractTracker) return null;
+
+    try {
+        // Buscar el evento PatientAdministered específico para este tokenId
+        const events = await contractTracker.getPastEvents('PatientAdministered', {
+            filter: { tokenId: tokenId },
+            fromBlock: Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0,
+            toBlock: 'latest'
+        }) as PatientAdministeredEventLog[]
+
+        // Filtrar por isBloodBag para asegurar que coincida con el tipo esperado
+        const matchingEvent = events.find(e => Boolean(e.returnValues.isBloodBag) === expectedIsBloodBag)
+
+        if (!matchingEvent) return null;
+
+        // Obtener información adicional del mapping
+        const administration = await contractTracker.methods.administeredToPatients(tokenId).call()
+
+        // Obtener información del hospital
+        const { name, location } = await contractTracker.methods.companies(matchingEvent.returnValues.hospital).call()
+
+        return {
+            blockNumber: Number(matchingEvent.blockNumber),
+            event: EventType.PatientAdministration,
+            owner: String(matchingEvent.returnValues.hospital) as Address,
+            name: name,
+            location: location,
+            timestamp: new Date(Number(matchingEvent.returnValues.timestamp) * 1000),
+            patientId: String(matchingEvent.returnValues.patientId),
+            medicalReason: String(administration.medicalReason)
+        }
+    } catch (error) {
+        console.error(`Error fetching patient administration for token ${tokenId}:`, error)
+        return null
+    }
+}
+
+/**
  * Recupera la trazabilidad completa de una donación a partir de la donación
  * @param tokenId Id de la donación original
  */
@@ -198,6 +285,12 @@ export async function getTraceFromDonation(tokenId: number) {
 
     // Si no encuentra eventos entonces es que la donación no existe
     if (!donationTrace.length) return { donationTrace: undefined }
+
+    // Verificar si hay administración a paciente para la donación original
+    const donationAdministration = await getPatientAdministrationEvent(tokenId, true)
+    if (donationAdministration) {
+        donationTrace.push(donationAdministration)
+    }
 
     const donation = {
         tokenId: tokenId,
@@ -218,6 +311,38 @@ export async function getTraceFromDonation(tokenId: number) {
     const plasmaTrace = await getEventsFromDerivative(plasmaId as number, Number(processBlock.blockNumber))
     const erythrocytesTrace = await getEventsFromDerivative(erythrocytesId as number, Number(processBlock.blockNumber))
     const plateletsTrace = await getEventsFromDerivative(plateletsId as number, Number(processBlock.blockNumber))
+
+    // Verificar si hay lote manufacturado para cada derivado
+    const plasmaBatch = await getManufacturerBatchEvent(Number(plasmaId))
+    if (plasmaBatch) {
+        plasmaTrace.push(plasmaBatch)
+    }
+
+    const erythrocytesBatch = await getManufacturerBatchEvent(Number(erythrocytesId))
+    if (erythrocytesBatch) {
+        erythrocytesTrace.push(erythrocytesBatch)
+    }
+
+    const plateletsBatch = await getManufacturerBatchEvent(Number(plateletsId))
+    if (plateletsBatch) {
+        plateletsTrace.push(plateletsBatch)
+    }
+
+    // Verificar si hay administración a paciente para cada derivado
+    const plasmaAdministration = await getPatientAdministrationEvent(Number(plasmaId), false)
+    if (plasmaAdministration) {
+        plasmaTrace.push(plasmaAdministration)
+    }
+
+    const erythrocytesAdministration = await getPatientAdministrationEvent(Number(erythrocytesId), false)
+    if (erythrocytesAdministration) {
+        erythrocytesTrace.push(erythrocytesAdministration)
+    }
+
+    const plateletsAdministration = await getPatientAdministrationEvent(Number(plateletsId), false)
+    if (plateletsAdministration) {
+        plateletsTrace.push(plateletsAdministration)
+    }
 
     return {
         donationTrace: donation,
@@ -243,6 +368,88 @@ export async function getTokenIdOriginFromDerivative(tokenId: number) {
     const { tokenIdOrigin } = await contractDerivative.methods.products(tokenId).call()
     if (!tokenIdOrigin) return
     return await getTraceFromDonation(tokenIdOrigin as number)
+}
+
+/**
+ * Recupera las administraciones a pacientes realizadas por un hospital
+ * @param hospitalAddress Dirección del hospital
+ * @returns Registro de administraciones realizadas por el hospital
+ */
+export async function getPatientAdministrations(hospitalAddress: string) {
+    const { web3, contractTracker } = getContracts();
+    if (!web3 || !contractTracker) return [];
+
+    const administrations = []
+
+    // Obtener TODOS los eventos PatientAdministered
+    const allEvents = await contractTracker.getPastEvents('PatientAdministered', {
+        fromBlock: Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0,
+        toBlock: 'latest'
+    }) as PatientAdministeredEventLog[]
+
+    console.log(`getPatientAdministrations: Found ${allEvents.length} total PatientAdministered events`)
+
+    // Filtrar manualmente por dirección del hospital
+    const hospitalChecksum = web3.utils.toChecksumAddress(hospitalAddress)
+
+    for (const event of allEvents) {
+        const eventHospital = web3.utils.toChecksumAddress(String(event.returnValues.hospital))
+
+        if (eventHospital === hospitalChecksum) {
+            const tokenId = Number(event.returnValues.tokenId)
+
+            // Obtener medicalReason del mapping del contrato
+            let medicalReason = ''
+            try {
+                const administration = await contractTracker.methods.administeredToPatients(tokenId).call()
+                medicalReason = String(administration.medicalReason)
+            } catch (error) {
+                console.error(`Error fetching medicalReason for token ${tokenId}:`, error)
+            }
+
+            administrations.push({
+                tokenId: tokenId,
+                patientId: String(event.returnValues.patientId),
+                medicalReason: medicalReason,
+                isBloodBag: Boolean(event.returnValues.isBloodBag),
+                administeredDate: new Date(Number(event.returnValues.timestamp) * 1000),
+                hospital: String(event.returnValues.hospital) as Address
+            })
+        }
+    }
+
+    console.log(`getPatientAdministrations: Filtered to ${administrations.length} events for hospital ${hospitalChecksum}`)
+
+    return administrations
+}
+
+/**
+ * Recupera los lotes manufacturados creados por un fabricante
+ * @param manufacturerAddress Dirección del fabricante
+ * @returns Registro de lotes creados por el fabricante
+ */
+export async function getManufacturedBatches(manufacturerAddress: string) {
+    const { contractTracker } = getContracts();
+    if (!contractTracker) return [];
+
+    const batches = []
+    const events = await contractTracker.getPastEvents('BatchCreated', {
+        filter: { manufacturer: manufacturerAddress },
+        fromBlock: Number(process.env.NEXT_PUBLIC_DEPLOYMENT_BLOCK) || 0,
+        toBlock: 'latest'
+    }) as BatchCreatedEventLog[]
+
+    for (const event of events) {
+        batches.push({
+            batchId: Number(event.returnValues.batchId),
+            derivativeIds: event.returnValues.derivativeIds.map(id => Number(id)),
+            productType: String(event.returnValues.productType),
+            timestamp: new Date(Number(event.returnValues.timestamp) * 1000),
+            manufacturer: String(event.returnValues.manufacturer) as Address
+        })
+    }
+
+    return batches
 }
 
 async function formatEvent(events: TransferEventLog[]): Promise<EventTrace[]> {

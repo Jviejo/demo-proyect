@@ -19,6 +19,16 @@ contract BloodTracker is IBlood, Marketplace, AccessControl {
     error BloodTracker__RequestNotPending();
     error BloodTracker__CompanyNotApproved();
     error BloodTracker__InvalidRole();
+    error BloodTracker__HospitalCannotListItems();
+    error BloodTracker__ManufacturerCannotListItems();
+    error BloodTracker__DonationCenterCannotList();
+    error BloodTracker__InvalidTokenType();
+    error BloodTracker__MustProvidePatientInfo();
+    error BloodTracker__MustProvideProductInfo();
+    error BloodTracker__AlreadyAdministered();
+    error BloodTracker__CannotBuyItems();
+    error BloodTracker__DerivativeAlreadyUsedInBatch();
+    error BloodTracker__InvalidTokenForAdministration();
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant SUPER_ADMIN_ROLE = keccak256("SUPER_ADMIN_ROLE");
@@ -28,10 +38,12 @@ contract BloodTracker is IBlood, Marketplace, AccessControl {
     uint256 constant MINIMUM_DONATION_FEE = 0.001 ether;
 
     enum Role {
-        NO_REGISTERED,
-        DONATION_CENTER,
-        LABORATORY,
-        TRADER
+        NO_REGISTERED,      // 0
+        DONATION_CENTER,    // 1
+        LABORATORY,         // 2
+        TRADER,             // 3
+        HOSPITAL,           // 4
+        MANUFACTURER        // 5
     }
 
     enum RequestStatus {
@@ -70,12 +82,36 @@ contract BloodTracker is IBlood, Marketplace, AccessControl {
         string rejectionReason;
     }
 
+    // Administración de pacientes
+    struct PatientAdministration {
+        uint256 tokenId;
+        string patientId;           // Hash del ID del paciente (privacidad)
+        string medicalReason;       // Motivo médico
+        uint256 timestamp;
+        address hospital;
+    }
+
+    // Lotes manufacturados
+    struct ManufacturedBatch {
+        uint256 batchId;
+        uint256[] derivativeIds;    // Derivados usados en el lote
+        string productType;         // Tipo de producto cosmético
+        uint256 timestamp;
+        address manufacturer;
+    }
+
     mapping(address donorWallet => Donor) public donors;
     mapping(address companyWallet => Company) public companies;
     mapping(uint256 requestId => RegistrationRequest) public requests;
     mapping(address applicant => uint256 requestId) public activeRequestId;
 
+    // Nuevos mappings para Hospital y Manufacturer
+    mapping(uint256 => PatientAdministration) public administeredToPatients;
+    mapping(uint256 => ManufacturedBatch) public manufacturedBatches;
+    mapping(uint256 => bool) public derivativesUsedInBatch;
+
     uint256 public requestCounter;
+    uint256 public batchCounter;
     uint256[] private pendingRequestIds;
 
     event Donation(
@@ -121,6 +157,22 @@ contract BloodTracker is IBlood, Marketplace, AccessControl {
         address indexed modifiedBy,
         Role oldRole,
         Role newRole,
+        uint256 timestamp
+    );
+
+    event PatientAdministered(
+        uint256 indexed tokenId,
+        address indexed hospital,
+        string patientId,
+        bool isBloodBag,
+        uint256 timestamp
+    );
+
+    event BatchCreated(
+        uint256 indexed batchId,
+        address indexed manufacturer,
+        uint256[] derivativeIds,
+        string productType,
         uint256 timestamp
     );
 
@@ -375,6 +427,109 @@ contract BloodTracker is IBlood, Marketplace, AccessControl {
         return (plasmaId, erythrocytesId, plateletsId);
     }
 
+    /**
+     * @notice Registra la administración de un derivado o bolsa a un paciente
+     * @param tokenId ID del token administrado
+     * @param isBloodBag true si es BloodDonation, false si es BloodDerivative
+     * @param patientId Hash del ID del paciente (mantiene privacidad)
+     * @param medicalReason Motivo médico de la administración
+     */
+    function registerPatientAdministration(
+        uint256 tokenId,
+        bool isBloodBag,
+        string memory patientId,
+        string memory medicalReason
+    ) external onlyCompanyRole(Role.HOSPITAL) {
+        // Validar parámetros
+        if (bytes(patientId).length == 0 || bytes(medicalReason).length == 0) {
+            revert BloodTracker__MustProvidePatientInfo();
+        }
+
+        // Validar que el hospital posee el token según el tipo
+        address owner;
+        if (isBloodBag) {
+            owner = bld.ownerOf(tokenId);
+        } else {
+            owner = der.ownerOf(tokenId);
+        }
+
+        if (owner != msg.sender) {
+            revert BloodTracker__NotOwner();
+        }
+
+        // Validar que no se ha administrado antes
+        if (administeredToPatients[tokenId].timestamp != 0) {
+            revert BloodTracker__AlreadyAdministered();
+        }
+
+        // Registrar administración
+        administeredToPatients[tokenId] = PatientAdministration({
+            tokenId: tokenId,
+            patientId: patientId,
+            medicalReason: medicalReason,
+            timestamp: block.timestamp,
+            hospital: msg.sender
+        });
+
+        emit PatientAdministered(tokenId, msg.sender, patientId, isBloodBag, block.timestamp);
+    }
+
+    /**
+     * @notice Crea un lote de producto cosmético usando derivados
+     * @param derivativeIds Array de IDs de derivados usados en el lote
+     * @param productType Tipo de producto cosmético
+     * @dev Los derivados se marcan como usados para evitar reutilización
+     */
+    function createManufacturedBatch(
+        uint256[] memory derivativeIds,
+        string memory productType
+    ) external onlyCompanyRole(Role.MANUFACTURER) returns (uint256) {
+        // Validar que tiene al menos un derivado
+        if (derivativeIds.length == 0) {
+            revert BloodTracker__MustProvideProductInfo();
+        }
+
+        // Validar productType
+        if (bytes(productType).length == 0) {
+            revert BloodTracker__MustProvideProductInfo();
+        }
+
+        // Validar que posee todos los derivados y no están usados
+        for (uint256 i = 0; i < derivativeIds.length; i++) {
+            // Verificar propiedad
+            address owner = der.ownerOf(derivativeIds[i]);
+            if (owner != msg.sender) {
+                revert BloodTracker__NotOwner();
+            }
+
+            // Verificar que no se ha usado antes
+            if (derivativesUsedInBatch[derivativeIds[i]]) {
+                revert BloodTracker__DerivativeAlreadyUsedInBatch();
+            }
+        }
+
+        // Incrementar contador
+        batchCounter++;
+
+        // Marcar derivados como usados
+        for (uint256 i = 0; i < derivativeIds.length; i++) {
+            derivativesUsedInBatch[derivativeIds[i]] = true;
+        }
+
+        // Crear lote
+        manufacturedBatches[batchCounter] = ManufacturedBatch({
+            batchId: batchCounter,
+            derivativeIds: derivativeIds,
+            productType: productType,
+            timestamp: block.timestamp,
+            manufacturer: msg.sender
+        });
+
+        emit BatchCreated(batchCounter, msg.sender, derivativeIds, productType, block.timestamp);
+
+        return batchCounter;
+    }
+
     ///////////////////////////
     ////////Marketplace////////
     ///////////////////////////
@@ -386,19 +541,72 @@ contract BloodTracker is IBlood, Marketplace, AccessControl {
         uint256 price
     ) public override {
         Role role = companies[msg.sender].role;
-        if (role != Role.LABORATORY && role != Role.TRADER)
-            revert BloodTracker__IncorrectRole(
-                role,
-                companies[msg.sender].role
-            );
-        super.listItem(nftAddress, tokenId, price);
+
+        // Validar que el rol puede listar
+        if (role == Role.HOSPITAL || role == Role.MANUFACTURER || role == Role.DONATION_CENTER) {
+            if (role == Role.HOSPITAL) revert BloodTracker__HospitalCannotListItems();
+            if (role == Role.MANUFACTURER) revert BloodTracker__ManufacturerCannotListItems();
+            if (role == Role.DONATION_CENTER) revert BloodTracker__DonationCenterCannotList();
+        }
+
+        // LABORATORY puede listar ambos tipos
+        if (role == Role.LABORATORY) {
+            if (nftAddress != address(bld) && nftAddress != address(der)) {
+                revert BloodTracker__InvalidTokenType();
+            }
+            super.listItem(nftAddress, tokenId, price);
+            return;
+        }
+
+        // TRADER solo puede listar derivados
+        if (role == Role.TRADER) {
+            if (nftAddress != address(der)) {
+                revert BloodTracker__InvalidTokenType();
+            }
+            super.listItem(nftAddress, tokenId, price);
+            return;
+        }
+
+        revert BloodTracker__IncorrectRole(role, companies[msg.sender].role);
     }
 
     function buyItem(
         address nftAddress,
-        uint256 tokenId // isNotOwner(nftAddress, tokenId, msg.sender)
-    ) public payable override onlyCompanyRole(Role.TRADER) {
-        super.buyItem(nftAddress, tokenId);
+        uint256 tokenId
+    ) public payable override {
+        Role role = companies[msg.sender].role;
+
+        // TRADER puede comprar cualquier cosa
+        if (role == Role.TRADER) {
+            super.buyItem(nftAddress, tokenId);
+            return;
+        }
+
+        // HOSPITAL puede comprar bolsas completas (BloodDonation) o derivados
+        if (role == Role.HOSPITAL) {
+            if (nftAddress != address(bld) && nftAddress != address(der)) {
+                revert BloodTracker__InvalidTokenType();
+            }
+            super.buyItem(nftAddress, tokenId);
+            return;
+        }
+
+        // MANUFACTURER solo puede comprar derivados
+        if (role == Role.MANUFACTURER) {
+            if (nftAddress != address(der)) {
+                revert BloodTracker__InvalidTokenType();
+            }
+            super.buyItem(nftAddress, tokenId);
+            return;
+        }
+
+        // LABORATORY y DONATION_CENTER no pueden comprar
+        if (role == Role.LABORATORY || role == Role.DONATION_CENTER) {
+            revert BloodTracker__CannotBuyItems();
+        }
+
+        // NO_REGISTERED u otros roles no permitidos
+        revert BloodTracker__IncorrectRole(role, companies[msg.sender].role);
     }
 
     ///////////////////////////

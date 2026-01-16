@@ -4,6 +4,7 @@ import { useWallet } from './ConnectWalletButton';
 import { useEffect, useState, useCallback } from 'react';
 import { abi as abiTracker } from '@/../../src/lib/contracts/BloodTracker';
 import { abi as abiDerivative } from '@/../../src/lib/contracts/BloodDerivative';
+import { abi as abiDonation } from '@/../../src/lib/contracts/BloodDonation';
 import { FaFilter, FaPlus } from 'react-icons/fa';
 import Link from 'next/link';
 import { AppContainer } from '@/app/layout';
@@ -56,6 +57,7 @@ interface TokenInterface {
   priceEther: string;
   seller: string;
   image: string;
+  isBloodBag: boolean;  // true = BloodDonation, false = BloodDerivative
 }
 
 function Marketplace() {
@@ -70,10 +72,14 @@ function Marketplace() {
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10 });
 
-  const tokenAddresses = [process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS];
+  const tokenAddresses = [
+    process.env.NEXT_PUBLIC_BLD_DONATION_CONTRACT_ADDRESS,
+    process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS
+  ];
 
   const marketPlaceTypes = [
     { id: 0, label: 'Todos' },
+    { id: -1, label: 'Bolsa Completa' },
     { id: 1, label: 'Plasma' },
     { id: 2, label: 'Eritrocitos' },
     { id: 3, label: 'Plaquetas' },
@@ -90,36 +96,54 @@ function Marketplace() {
     try {
       const tokens: TokenInterface[] = [];
 
+      const contractTracker = new web3.eth.Contract(
+        abiTracker,
+        process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS
+      );
+
       for (const address of tokenAddresses) {
-        const contractTracker = new web3.eth.Contract(
-          abiTracker,
-          process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS
-        );
         const result = await contractTracker.methods.getTokensOnSale(address).call({ from: account });
 
         for (const tokenId of result) {
-          const contract = new web3.eth.Contract(
-            abiDerivative,
-            process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS
-          );
+          const isBloodDonation = address === process.env.NEXT_PUBLIC_BLD_DONATION_CONTRACT_ADDRESS;
 
-          // Obtener el tipo de derivado del contrato
-          const product = await contract.methods.products(tokenId).call();
-          const derivativeType = Number(product.derivative); // Campo correcto del struct Product
+          let typeString, typeNumber, image;
+
+          if (isBloodDonation) {
+            // Es BloodDonation - bolsa completa
+            typeString = 'BLOOD_BAG';
+            typeNumber = 0;
+            image = '/blood-bag.png';
+          } else {
+            // Es BloodDerivative
+            const contract = new web3.eth.Contract(
+              abiDerivative,
+              process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS
+            );
+
+            // Obtener el tipo de derivado del contrato
+            const product = await contract.methods.products(tokenId).call();
+            const derivativeType = Number(product.derivative);
+
+            typeString = getDerivativeTypeFromNumber(derivativeType);
+            typeNumber = derivativeType;
+            image = getImageFromDerivative(derivativeType);
+          }
 
           const marketplaceData = await contractTracker.methods
             .getListing(address, tokenId)
             .call({ from: account });
 
           tokens.push({
-            tokenAddress: process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS!,
+            tokenAddress: address!,
             tokenId: Number(tokenId),
-            typeString: getDerivativeTypeFromNumber(derivativeType),
-            typeNumber: derivativeType,
+            typeString,
+            typeNumber,
             price: marketplaceData[0].toString(),
             priceEther: formatEther(marketplaceData[0].toString()),
             seller: marketplaceData[1].toString(),
-            image: getImageFromDerivative(derivativeType),
+            image,
+            isBloodBag: isBloodDonation,
           });
         }
       }
@@ -144,7 +168,13 @@ function Marketplace() {
 
     // Filtro por tipo
     if (filterType !== 0) {
-      filtered = filtered.filter((token) => token.typeNumber === filterType);
+      if (filterType === -1) {
+        // Filtrar solo bolsas completas
+        filtered = filtered.filter((token) => token.isBloodBag);
+      } else {
+        // Filtrar por tipo de derivado
+        filtered = filtered.filter((token) => !token.isBloodBag && token.typeNumber === filterType);
+      }
     }
 
     // Filtro por precio
@@ -157,7 +187,7 @@ function Marketplace() {
   }, [tokensOnSale, filterType, priceRange]);
 
   // Función para comprar
-  const handleBuyClick = async (tokenId: number, price: string) => {
+  const handleBuyClick = async (tokenId: number, price: string, tokenAddress: string) => {
     if (!web3) return;
 
     const toastId = showTransactionPending();
@@ -169,7 +199,7 @@ function Marketplace() {
       );
 
       const tx = await contractTracker.methods
-        .buyItem(process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS, tokenId)
+        .buyItem(tokenAddress, tokenId)
         .send({
           value: price,
           from: account,
@@ -188,7 +218,7 @@ function Marketplace() {
   };
 
   // Función para cancelar
-  const handleCancelClick = async (tokenId: number) => {
+  const handleCancelClick = async (tokenId: number, tokenAddress: string) => {
     if (!web3) return;
 
     const toastId = showTransactionPending();
@@ -200,7 +230,7 @@ function Marketplace() {
       );
 
       const tx = await contractTracker.methods
-        .cancelListing(process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS, tokenId)
+        .cancelListing(tokenAddress, tokenId)
         .send({
           from: account,
           gas: '1000000',

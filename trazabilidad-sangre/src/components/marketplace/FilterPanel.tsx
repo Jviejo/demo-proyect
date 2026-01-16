@@ -40,20 +40,22 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       <div>
         <h4 className="text-sm font-medium text-slate-700 mb-3">Tipo de Derivado</h4>
         <div className="space-y-2">
-          {marketPlaceTypes.map((type) => (
-            <button
-              key={type.id}
-              onClick={() => setFilterType(type.id)}
-              className={clsx(
-                'w-full text-left px-4 py-2.5 rounded-lg transition-all duration-200',
-                'text-sm font-medium',
-                filterType === type.id
-                  ? 'bg-blockchain-600 text-white shadow-md'
-                  : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
-              )}
-            >
-              {type.label}
-            </button>
+          {marketPlaceTypes?.map((type) => (
+            type && (
+              <button
+                key={type.id}
+                onClick={() => setFilterType(type.id)}
+                className={clsx(
+                  'w-full text-left px-4 py-2.5 rounded-lg transition-all duration-200',
+                  'text-sm font-medium',
+                  filterType === type.id
+                    ? 'bg-blockchain-600 text-white shadow-md'
+                    : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                )}
+              >
+                {type.label}
+              </button>
+            )
           ))}
         </div>
       </div>

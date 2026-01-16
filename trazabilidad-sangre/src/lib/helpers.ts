@@ -134,10 +134,72 @@ export function getEventTypeName(event: string): string {
     'Sale': 'Venta',
     'Purchase': 'Compra',
     'Listed': 'Publicado',
-    'Unlisted': 'Retirado'
+    'Unlisted': 'Retirado',
+    'Generation': 'Generación',
+    'Consumation': 'Procesamiento',
+    'PatientAdministration': 'Administración a Paciente',
+    'ManufacturerBatch': 'Lote Manufacturado'
   };
 
   return events[event] || event;
+}
+
+/**
+ * Obtiene el nombre del rol según el número
+ * @param role - Número del rol (0-5)
+ * @returns Nombre del rol
+ */
+export function getRoleName(role: number | string): string {
+  const roleNum = typeof role === 'string' ? parseInt(role) : role;
+
+  const roles: Record<number, string> = {
+    0: 'Sin Registrar',
+    1: 'Centro de Donación',
+    2: 'Laboratorio',
+    3: 'Trader',
+    4: 'Hospital',
+    5: 'Manufacturer'
+  };
+
+  return roles[roleNum] || 'Desconocido';
+}
+
+/**
+ * Obtiene el nombre del tipo de producto manufacturado
+ * @param type - Tipo de producto (SERUM, CREAM, etc.)
+ * @returns Nombre del producto
+ */
+export function getProductTypeName(type: string): string {
+  const types: Record<string, string> = {
+    'SERUM': 'Serum Facial',
+    'CREAM': 'Crema Anti-Edad',
+    'MASK': 'Mascarilla Facial',
+    'TREATMENT': 'Tratamiento Capilar',
+    'SUPPLEMENT': 'Suplemento Nutricional'
+  };
+
+  return types[type] || type;
+}
+
+/**
+ * Obtiene la imagen según el tipo de token (bolsa o derivado)
+ * @param isBloodBag - true si es bolsa completa, false si es derivado
+ * @param derivativeType - tipo de derivado (0, 1, 2) si es derivado
+ * @returns Ruta de la imagen
+ */
+export function getImageFromType(isBloodBag: boolean, derivativeType?: number): string {
+  if (isBloodBag) {
+    return '/blood-bag.png';
+  }
+
+  // Para derivados, usar las imágenes existentes
+  const images: Record<number, string> = {
+    0: '/plasma.png',
+    1: '/erythrocytes.png',
+    2: '/platelets.png'
+  };
+
+  return images[derivativeType || 0] || '/blood-bag.png';
 }
 
 /**

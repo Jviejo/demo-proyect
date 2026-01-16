@@ -16,7 +16,7 @@ const MainBody = () => {
       <HeroSection
         title="Trazabilidad de Sangre con Blockchain"
         subtitle="Conectando toda la cadena de valor desde el donante hasta el receptor con tecnología blockchain"
-        backgroundImage="/images/content/company/hero-blood.jpg"
+        backgroundImage="/images/content/company/hero.webp"
         height="xl"
       />
 

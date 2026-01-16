@@ -93,6 +93,45 @@ export const abi = [
   },
   {
     "type": "function",
+    "name": "administeredToPatients",
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "patientId",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "medicalReason",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "timestamp",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "hospital",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "approveRequest",
     "inputs": [
       {
@@ -103,6 +142,19 @@ export const abi = [
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "batchCounter",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -175,6 +227,49 @@ export const abi = [
         "name": "requestId",
         "type": "uint256",
         "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "createManufacturedBatch",
+    "inputs": [
+      {
+        "name": "derivativeIds",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "productType",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "derivativesUsedInBatch",
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
       }
     ],
     "stateMutability": "view"
@@ -518,6 +613,40 @@ export const abi = [
   },
   {
     "type": "function",
+    "name": "manufacturedBatches",
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "batchId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "productType",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "timestamp",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "manufacturer",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "modifyRole",
     "inputs": [
       {
@@ -561,6 +690,34 @@ export const abi = [
         "internalType": "uint256"
       }
     ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerPatientAdministration",
+    "inputs": [
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "isBloodBag",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "patientId",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "medicalReason",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [],
     "stateMutability": "nonpayable"
   },
   {
@@ -782,6 +939,43 @@ export const abi = [
   },
   {
     "type": "event",
+    "name": "BatchCreated",
+    "inputs": [
+      {
+        "name": "batchId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "manufacturer",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "derivativeIds",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "productType",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      },
+      {
+        "name": "timestamp",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "CompanyRevoked",
     "inputs": [
       {
@@ -922,6 +1116,43 @@ export const abi = [
       },
       {
         "name": "price",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "PatientAdministered",
+    "inputs": [
+      {
+        "name": "tokenId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "hospital",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "patientId",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
+      },
+      {
+        "name": "isBloodBag",
+        "type": "bool",
+        "indexed": false,
+        "internalType": "bool"
+      },
+      {
+        "name": "timestamp",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
@@ -1196,7 +1427,32 @@ export const abi = [
   },
   {
     "type": "error",
+    "name": "BloodTracker__AlreadyAdministered",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "BloodTracker__CannotBuyItems",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "BloodTracker__CompanyNotApproved",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "BloodTracker__DerivativeAlreadyUsedInBatch",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "BloodTracker__DonationCenterCannotList",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "BloodTracker__HospitalCannotListItems",
     "inputs": []
   },
   {
@@ -1222,7 +1478,32 @@ export const abi = [
   },
   {
     "type": "error",
+    "name": "BloodTracker__InvalidTokenForAdministration",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "BloodTracker__InvalidTokenType",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "BloodTracker__ManufacturerCannotListItems",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "BloodTracker__MinimumDonationFeeNotMet",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "BloodTracker__MustProvidePatientInfo",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "BloodTracker__MustProvideProductInfo",
     "inputs": []
   },
   {
