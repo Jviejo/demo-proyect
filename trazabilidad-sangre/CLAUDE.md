@@ -56,6 +56,16 @@ forge test --match-test <nombre_funcion>
 forge fmt
 ```
 
+### Verificación de Conexión Besu
+
+```bash
+# Verificar conectividad
+cd foundry && make verify-besu
+
+# Ver balance del admin
+cast balance 0x60015448D7418C4e70275a5aA2340086A9f8Dd01 --rpc-url https://besu1.proyectos.codecrypto.academy
+```
+
 ### Deployment de Contratos
 
 **Para red local Anvil:**
@@ -70,6 +80,18 @@ cd foundry && make deploy-anvil
 **Para Trias Testnet (TSC):**
 ```bash
 cd foundry && make deploy-tsc
+```
+
+**Para Besu CodeCrypto:**
+```bash
+# 1. Verificar conexión
+cd foundry && make verify-besu
+
+# 2. Desplegar contratos
+cd foundry && make deploy-besu-admin
+
+# 3. (Opcional) Generar datos de prueba
+cd foundry && make seed-data-besu
 ```
 
 Nota: Los deployment scripts están en `foundry/script/DeployBlood.s.sol`. Las direcciones de los contratos desplegados se guardan en `foundry/broadcast/`.
@@ -98,12 +120,37 @@ ANVIL_RPC_URL=http://localhost:8545
 TRIAS_RPC_URL=<url_de_trias_testnet>
 ```
 
-### Direcciones de Contratos Desplegados (TSC)
+### Direcciones de Contratos Desplegados
+
+**Trias Testnet (TSC)**
 
 Referencia en README.md:
 - BloodTracker: 0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6
 - BloodDonation: 0x0165878A594ca255338adfa4d48449f69242Eb8F
 - BloodDerivative: 0xa513E6E4b8f2a923D98304ec87F64353C4D5C853
+
+**Besu CodeCrypto (Chain ID: 81234)**
+
+- Network: https://besu1.proyectos.codecrypto.academy
+- Admin: 0x60015448D7418C4e70275a5aA2340086A9f8Dd01
+- BloodTracker: 0xAD02838C74214EE9FD253b678c489a7885527f1C
+- BloodDonation: 0x02f2Ad3c32374c98DD52747a8cf825907CbDe794
+- BloodDerivative: 0x8Cdd7b2Fa65D5c5EbadCf660821d4150559c42bb
+
+### Configuración de MetaMask para Besu CodeCrypto
+
+Para conectar MetaMask a la red Besu CodeCrypto:
+
+1. Abrir MetaMask
+2. Ir a Configuración > Redes > Agregar red manualmente
+3. Configurar los siguientes parámetros:
+   - **Network Name:** Besu CodeCrypto
+   - **RPC URL:** https://besu1.proyectos.codecrypto.academy
+   - **Chain ID:** 81234
+   - **Currency Symbol:** ETH
+4. Guardar la red
+
+**Nota:** La aplicación frontend ahora está configurada para usar Besu CodeCrypto por defecto. Ver `.env.local` para más detalles.
 
 ### Foundry Configuration
 
@@ -112,6 +159,8 @@ El archivo `foundry.toml` configura paths personalizados:
 - test: `./foundry/test`
 - script: `./foundry/script`
 - out: `./foundry/out`
+
+**Optimización importante:** El optimizador de Solidity está habilitado con 1000 runs para reducir el tamaño de los contratos y permitir el deployment en Besu.
 
 ## Flujo de Trabajo del Sistema
 
