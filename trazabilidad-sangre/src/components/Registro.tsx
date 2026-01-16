@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { abi as abiTracker } from "@/../../src/lib/contracts/BloodTracker";
 import { useWallet } from "./ConnectWalletButton";
@@ -15,9 +15,10 @@ import { showTransactionSuccess, showTransactionError, showTransactionPending } 
 const STEPS = ["Rol", "Información", "Confirmación"];
 
 const Register = () => {
-  const { account, web3, setRole } = useWallet();
+  const { account, web3, setRole, role, isAdmin } = useWallet();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
   const router = useRouter();
 
   // Form state
@@ -25,6 +26,33 @@ const Register = () => {
   const [companyName, setCompanyName] = useState("");
   const [location, setLocation] = useState("");
   const [registerSanitario, setRegisterSanitario] = useState("");
+
+  // Validación de acceso: Solo usuarios sin rol pueden acceder al registro
+  useEffect(() => {
+    if (!account) {
+      // Si no hay wallet conectada, esperar
+      setIsCheckingAccess(false);
+      return;
+    }
+
+    // Si el role está determinado (no es null)
+    if (role !== null) {
+      // Admin: redirigir a panel de admin
+      if (isAdmin) {
+        router.push("/admin/approval-requests");
+        return;
+      }
+
+      // Si tiene rol de empresa (1, 2, 3) o donante (4), redirigir a all-role-grid
+      if (role !== 5) {
+        router.push("/all-role-grid");
+        return;
+      }
+
+      // Si role === 5 (No registrado), permitir acceso
+      setIsCheckingAccess(false);
+    }
+  }, [account, role, isAdmin, router]);
 
   const canGoNext = () => {
     switch (currentStep) {
@@ -75,7 +103,44 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      // Map role to number
+      // Submit transaction
+      const contractTracker = new web3.eth.Contract(
+        abiTracker,
+        process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS
+      );
+
+      // VALIDACIÓN 1: Verificar si la wallet es admin
+      const adminStatus = await contractTracker.methods.isAdmin(account).call();
+      if (Boolean(adminStatus)) {
+        showTransactionError({ message: "Esta wallet es administrador. Los administradores no pueden registrarse como empresa." });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // VALIDACIÓN 2: Verificar si la wallet ya tiene un rol de empresa
+      const company = await contractTracker.methods.companies(account).call();
+      const existingRole = Number(company.role);
+
+      if (existingRole !== 0) {
+        showTransactionError({ message: "Esta wallet ya está registrada como empresa. No puedes tener múltiples roles." });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // VALIDACIÓN 3: Verificar si la wallet ya es donante
+      const donationEvents = await contractTracker.getPastEvents('Donation', {
+        filter: { donor: account },
+        fromBlock: 0,
+        toBlock: 'latest'
+      });
+
+      if (donationEvents.length > 0) {
+        showTransactionError({ message: "Esta wallet ya está registrada como donante. No puedes registrarte como empresa." });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Map role to number (usa el estado del formulario companyRole)
       let roleNum;
       switch (companyRole) {
         case "Collector Center":
@@ -94,12 +159,6 @@ const Register = () => {
 
       // Show pending toast
       const pendingToastId = showTransactionPending();
-
-      // Submit transaction
-      const contractTracker = new web3.eth.Contract(
-        abiTracker,
-        process.env.NEXT_PUBLIC_BLD_TRACKER_CONTRACT_ADDRESS
-      );
 
       const receipt = await contractTracker.methods
         .requestSignUp(companyName, location, roleNum)
@@ -140,6 +199,18 @@ const Register = () => {
   const paginate = (newDirection: number) => {
     setDirection(newDirection);
   };
+
+  // Mostrar pantalla de carga mientras se verifica el acceso
+  if (isCheckingAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blood-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Verificando permisos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 py-12 px-4 sm:px-6 lg:px-8">

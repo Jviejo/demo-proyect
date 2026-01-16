@@ -17,8 +17,6 @@ const MainBody = () => {
         title="Trazabilidad de Sangre con Blockchain"
         subtitle="Conectando toda la cadena de valor desde el donante hasta el receptor con tecnología blockchain"
         backgroundImage="/images/content/company/hero-blood.jpg"
-        ctaText="Comenzar"
-        ctaLink="/role-registro"
         height="xl"
       />
 
@@ -235,17 +233,9 @@ const MainBody = () => {
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
               ¿Listo para comenzar?
             </h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Únete a nuestra plataforma de trazabilidad de sangre y forma
-              parte de la revolución blockchain en salud.
+            <p className="text-lg text-gray-600">
+              Conecta tu wallet para acceder a la plataforma de trazabilidad de sangre y forma parte de la revolución blockchain en salud.
             </p>
-            <Link
-              href="/role-registro"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blood-600 to-blockchain-600 text-white rounded-lg font-semibold text-lg hover:from-blood-700 hover:to-blockchain-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              Registrarse Ahora
-              <span className="text-xl">→</span>
-            </Link>
           </motion.div>
         </Container>
       </Section>

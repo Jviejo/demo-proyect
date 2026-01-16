@@ -10,6 +10,7 @@ import { AppContainer } from '@/app/layout';
 import { Button } from './ui/Button';
 import { ProductCard } from './marketplace/ProductCard';
 import { ProductDetailModal } from './marketplace/ProductDetailModal';
+import { ListItemModal } from './marketplace/ListItemModal';
 import { PriceFilter } from './marketplace/PriceFilter';
 import { FilterPanel } from './marketplace/FilterPanel';
 import { Skeleton } from './ui/Skeleton';
@@ -65,6 +66,7 @@ function Marketplace() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<TokenInterface | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isListItemModalOpen, setIsListItemModalOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10 });
 
@@ -101,9 +103,9 @@ function Marketplace() {
             process.env.NEXT_PUBLIC_BLD_DERIVATIVE_CONTRACT_ADDRESS
           );
 
-          // FIX línea 87: Obtener correctamente el tipo de derivado
+          // Obtener el tipo de derivado del contrato
           const product = await contract.methods.products(tokenId).call();
-          const derivativeType = Number(product.derivativeType); // Corregido
+          const derivativeType = Number(product.derivative); // Campo correcto del struct Product
 
           const marketplaceData = await contractTracker.methods
             .getListing(address, tokenId)
@@ -323,29 +325,32 @@ function Marketplace() {
                   ? 'Aún no hay productos en venta en el marketplace'
                   : 'No se encontraron productos con los filtros seleccionados'}
               </p>
-              <Link href="/marketplace/derivative/listItem">
-                <Button variant="primary" size="lg">
-                  <FaPlus className="mr-2" />
-                  Listar Producto
-                </Button>
-              </Link>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => setIsListItemModalOpen(true)}
+              >
+                <FaPlus className="mr-2" />
+                Listar Producto
+              </Button>
             </div>
           ) : (
             <Grid cols={{ xs: 1, md: 2, lg: 3, xl: 4 }} gap="md">
               {/* Card para agregar item */}
-              <Link href="/marketplace/derivative/listItem" className="block">
-                <div className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden cursor-pointer h-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 hover:border-primary-500">
-                  <div className="bg-primary-50 rounded-full p-6 mb-4">
-                    <FaPlus className="text-4xl text-primary-600" />
-                  </div>
-                  <h4 className="text-lg font-semibold text-slate-700 mb-2">
-                    Agregar Producto
-                  </h4>
-                  <p className="text-sm text-slate-500 text-center">
-                    Lista tus derivados en el marketplace
-                  </p>
+              <div
+                onClick={() => setIsListItemModalOpen(true)}
+                className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-200 overflow-hidden cursor-pointer h-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 hover:border-primary-500"
+              >
+                <div className="bg-primary-50 rounded-full p-6 mb-4">
+                  <FaPlus className="text-4xl text-primary-600" />
                 </div>
-              </Link>
+                <h4 className="text-lg font-semibold text-slate-700 mb-2">
+                  Agregar Producto
+                </h4>
+                <p className="text-sm text-slate-500 text-center">
+                  Lista tus derivados en el marketplace
+                </p>
+              </div>
 
               {/* Cards de productos */}
               {filteredTokens.map((token) => (
@@ -450,6 +455,13 @@ function Marketplace() {
         product={selectedProduct}
         onConfirmPurchase={handleBuyClick}
         isOwnProduct={selectedProduct ? isSeller(selectedProduct.seller) : false}
+      />
+
+      {/* Modal para listar producto */}
+      <ListItemModal
+        isOpen={isListItemModalOpen}
+        onClose={() => setIsListItemModalOpen(false)}
+        onSuccess={fetchTokensOnSale}
       />
     </AppContainer>
   );
