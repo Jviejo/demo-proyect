@@ -103,6 +103,8 @@ const Header = () => {
         return "Ethereum Mainnet";
       case "11155111":
         return "Sepolia Testnet";
+      case "81234":
+        return "Besu CodeCrypto";
       case "31337":
         return "Localhost";
       default:

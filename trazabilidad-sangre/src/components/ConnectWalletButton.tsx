@@ -306,6 +306,8 @@ export const Wallet: React.FC<WalletProviderProps> = ({ children }) => {
         return "Sepolia";
       case "5":
         return "Goerli";
+      case "81234":
+        return "Besu CodeCrypto";
       case "31337":
         return "Localhost (Anvil)";
       case "1337":

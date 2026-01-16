@@ -50,6 +50,10 @@ const getRoleBadgeVariant = (
 
 const getNetworkName = (networkId: string | null): string => {
   if (!networkId) return "Desconectado";
+  // Besu CodeCrypto chain ID is 0x13d52 (81234 in decimal)
+  if (networkId === "0x13d52" || networkId === "81234") {
+    return "Besu CodeCrypto";
+  }
   // Trias Testnet chain ID is 0x13881 (80001 in decimal)
   if (networkId === "0x13881" || networkId === "80001") {
     return "Trias Testnet";
